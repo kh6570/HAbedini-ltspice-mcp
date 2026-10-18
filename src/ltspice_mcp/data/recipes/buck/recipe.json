@@ -1,0 +1,6 @@
+{
+  "id": "buck",
+  "title": "Open-loop buck power stage",
+  "summary": "Pulsed source, inductor, diode, capacitor, and load. Not a closed-loop regulator.",
+  "analysis": "tran"
+}

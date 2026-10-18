@@ -1,0 +1,144 @@
+# In the name of God, the Most Gracious, the Most Merciful
+[project]
+name = "ltspice-mcp"
+version = "0.0.1"
+description = "Professional MCP server for the LTspice circuit simulator"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Hossein Abedini", email = "k.h6570@gmail.com" }]
+keywords = ["mcp", "ltspice", "spice", "simulation", "eda", "circuit"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Typing :: Typed",
+]
+dependencies = [
+    "mcp>=1.0.0,<2",
+    "numpy>=1.26",
+    "scipy>=1.12",
+    "matplotlib>=3.8",
+    "pydantic>=2.6",
+    "pydantic-settings>=2.2",
+    "python-dotenv>=1.0",
+    "packaging>=24.0",
+    "structlog>=24.1",
+    "anyio>=4.3",
+    "platformdirs>=4.2",
+    "mcp-app-core @ {env:MCP_CORE_URI:git+https://github.com/kh6570/HAbedini-mcp-app-core.git}",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "pytest-cov>=4.1",
+    "nox>=2024.4",
+    "ruff==0.15.12",
+    "mypy==1.20.2",
+]
+telemetry = ["opentelemetry-api>=1.24", "opentelemetry-sdk>=1.24"]
+
+[project.scripts]
+ltspice-mcp = "ltspice_mcp.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ltspice_mcp"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/ltspice_mcp/py.typed" = "ltspice_mcp/py.typed"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra --strict-markers --strict-config"
+markers = [
+    "integration: requires LTspice installed (set LTSPICE_EXE)",
+    "slow: long-running tests",
+]
+filterwarnings = ["error"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["matplotlib.*"]
+ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests", "scripts"]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "W",
+    "I",
+    "N",
+    "UP",
+    "B",
+    "A",
+    "C4",
+    "SIM",
+    "TCH",
+    "RUF",
+    "PL",
+    "PT",
+    "RET",
+    "PTH",
+    "ERA",
+    "TRY",
+    "ASYNC",
+    "S",
+]
+ignore = [
+    "PLR0911",
+    "PLR0912",
+    "PLR0913",
+    "PLR0915",
+    "PLR2004",
+    "TRY003",
+    "S101",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["PLR2004", "S101", "S603", "S607", "PLR0915"]
+"scripts/**" = ["T201", "S603", "S607"]
+"**/mcp_contracts.py" = ["E501"]
+"src/ltspice_mcp/__main__.py" = ["T201"]
+"src/ltspice_mcp/mcp/server.py" = ["T201"]
+"src/ltspice_mcp/services/schematic/operations.py" = ["E402"]
+"src/ltspice_mcp/services/waveform/operations.py" = ["E402"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["ltspice_mcp"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true

@@ -1,0 +1,6 @@
+{
+  "id": "boost",
+  "title": "Boost converter",
+  "summary": "Step-up stage. Ideal continuous-conduction gain is higher than the input.",
+  "equations": ["Vout = Vin / (1 - D)"]
+}

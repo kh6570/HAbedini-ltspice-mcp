@@ -1,0 +1,6 @@
+{
+  "id": "divider",
+  "title": "Resistive divider",
+  "summary": "10 V source and two equal resistors. The midpoint is about half the input.",
+  "analysis": "tran"
+}

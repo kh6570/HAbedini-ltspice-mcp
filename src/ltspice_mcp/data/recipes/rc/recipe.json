@@ -1,0 +1,6 @@
+{
+  "id": "rc",
+  "title": "RC low-pass",
+  "summary": "Pulsed source, series resistor, and shunt capacitor.",
+  "analysis": "tran"
+}

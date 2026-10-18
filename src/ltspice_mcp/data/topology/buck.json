@@ -1,0 +1,6 @@
+{
+  "id": "buck",
+  "title": "Buck converter",
+  "summary": "Step-down stage. Continuous-conduction duty cycle sets the ideal output.",
+  "equations": ["Vout = D * Vin"]
+}

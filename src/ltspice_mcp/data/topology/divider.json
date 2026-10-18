@@ -1,0 +1,6 @@
+{
+  "id": "divider",
+  "title": "Resistive divider",
+  "summary": "Two series resistors between a source and ground. The tap is a fraction of the input.",
+  "equations": ["Vout = Vin * R2 / (R1 + R2)"]
+}
