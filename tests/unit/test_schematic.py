@@ -54,7 +54,7 @@ def test_blank_schematic_and_sandbox(tmp_path: Path) -> None:
     text = Path(str(created["path"])).read_text(encoding="latin-1")
     assert text.startswith("Version 4")
     with pytest.raises(SandboxViolationError):
-        resolve_workspace_path(r"C:\Windows\notepad.exe", workspace_root=tmp_path)
+        resolve_workspace_path(tmp_path.parent / "outside-workspace.txt", workspace_root=tmp_path)
 
 
 def test_micro_sign_round_trip() -> None:
