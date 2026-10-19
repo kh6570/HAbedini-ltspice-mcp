@@ -37,13 +37,8 @@ def _core_checkout() -> Path | None:
 
 
 def _prefer_local_core() -> Path | None:
-    """Point the mcp-app-core dependency at a local checkout when one exists."""
-    if os.environ.get("MCP_CORE_URI", "").strip():
-        return _core_checkout()
-    checkout = _core_checkout()
-    if checkout is not None:
-        os.environ["MCP_CORE_URI"] = checkout.resolve().as_uri()
-    return checkout
+    """Return a local mcp-app-core checkout to install after the Git dependency."""
+    return _core_checkout()
 
 
 def _install_dev(session: nox.Session) -> None:

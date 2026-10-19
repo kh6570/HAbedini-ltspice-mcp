@@ -31,9 +31,6 @@ if ($env:MCP_CORE_PATH -and (Test-Path (Join-Path $env:MCP_CORE_PATH "src\mcp_ap
         $env:MCP_CORE_PATH = $core
     }
 }
-if ($core) {
-    $env:MCP_CORE_URI = ([Uri](Resolve-Path -LiteralPath $core).Path).AbsoluteUri
-}
 & $VenvPython -m pip install -e $RepoRoot
 if ($core) {
     & $VenvPython -m pip install -e $core --no-deps

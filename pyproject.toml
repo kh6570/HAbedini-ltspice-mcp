@@ -31,7 +31,7 @@ dependencies = [
     "structlog>=24.1",
     "anyio>=4.3",
     "platformdirs>=4.2",
-    "mcp-app-core @ {env:MCP_CORE_URI:git+https://github.com/kh6570/HAbedini-mcp-app-core.git}",
+    "mcp-app-core @ git+https://github.com/kh6570/HAbedini-mcp-app-core.git",
 ]
 
 [project.optional-dependencies]

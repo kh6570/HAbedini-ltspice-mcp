@@ -29,6 +29,7 @@ if TYPE_CHECKING:
     from ltspice_mcp.adapters.base import SimulationCommand
     from ltspice_mcp.infra.config import LTspiceSettings
 
+
 def resolve_executable(settings: LTspiceSettings, explicit: Path | None) -> Path:
     """Return a probed LTspice executable or raise."""
 
