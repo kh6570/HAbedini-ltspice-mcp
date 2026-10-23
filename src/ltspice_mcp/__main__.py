@@ -59,6 +59,17 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--log-folder", type=Path, default=None)
     parser.add_argument("--recipe-path", type=Path, default=None)
     parser.add_argument(
+        "--active-profiles",
+        default=None,
+        help="Comma-separated profiles. Use default,extended to load hidden groups.",
+    )
+    parser.add_argument(
+        "--window-sync",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Attach saves to an LTspice window the user already opened.",
+    )
+    parser.add_argument(
         "--log-level",
         choices=("debug", "info", "warning", "error"),
         default=None,
@@ -90,6 +101,8 @@ def main() -> None:
         log_folder=args.log_folder,
         recipe_path=args.recipe_path,
         session_mode=args.session_mode,
+        active_profiles=args.active_profiles,
+        window_sync=args.window_sync,
     )
     configure_logging(settings.log_level, log_folder=settings.log_folder)
 

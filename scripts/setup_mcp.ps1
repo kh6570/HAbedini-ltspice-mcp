@@ -66,11 +66,11 @@ $utf8 = New-Object System.Text.UTF8Encoding $false
 
 $merge = Join-Path $PSScriptRoot "merge_user_mcp_json.py"
 if ($Clients -eq "Cursor" -or $Clients -eq "Both") {
-    & $VenvPython $merge (Join-Path $env:USERPROFILE ".cursor\mcp.json") "mcpServers" "ltspice" $entryPath
+    & $VenvPython $merge (Join-Path $env:USERPROFILE ".cursor\mcp.json") "mcpServers" "ltspice-mcp" $entryPath
 }
 if ($Clients -eq "VSCode" -or $Clients -eq "Both") {
-    & $VenvPython $merge (Join-Path $env:APPDATA "Code\User\mcp.json") "servers" "ltspice" $entryPath
+    & $VenvPython $merge (Join-Path $env:APPDATA "Code\User\mcp.json") "servers" "ltspice-mcp" $entryPath
 }
 
 & $VenvPython -m ltspice_mcp --describe --ltspice-exe $LtspiceExe --workspace-root $WorkspaceRoot --log-level error | Out-Null
-Write-Output "ltspice MCP entry merged. Restart the IDE. qspice entries were not removed."
+Write-Output "ltspice-mcp entry merged. Restart the IDE. qspice entries were not removed."

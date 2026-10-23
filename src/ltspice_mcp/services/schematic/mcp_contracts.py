@@ -133,6 +133,15 @@ MCP_CONTRACTS: dict[str, dict[str, object]] = {
             "required": ["schematic_path"],
         },
     },
+    "check_netlist": {
+        "title": "Check Netlist",
+        "description": "Report structural problems in a .net or .cir file.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"netlist_path": {"type": "string"}},
+            "required": ["netlist_path"],
+        },
+    },
     "check_schematic": {
         "title": "Check Schematic",
         "description": "Report structural problems without running LTspice.",

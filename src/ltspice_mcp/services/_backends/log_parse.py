@@ -6,6 +6,7 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING
 
+from ltspice_mcp.services._backends.raw_file import load_raw
 from ltspice_mcp.services._backends.text_decode import read_ltspice_text
 
 if TYPE_CHECKING:
@@ -144,6 +145,44 @@ def parse_operating_points(text: str) -> list[dict[str, object]]:
                 }
             )
     return rows
+
+
+def operating_points_from_raw(path: Path) -> list[dict[str, object]]:
+    """Return one operating-point row per non-axis column of a sibling ``.op.raw``."""
+
+    plot = load_raw(path).primary
+    if plot.real.size == 0 or plot.real.shape[0] < 1:
+        return []
+    rows: list[dict[str, object]] = []
+    for variable in plot.variables:
+        if variable.kind.lower() in {"time", "frequency"}:
+            continue
+        if variable.index >= plot.real.shape[1]:
+            continue
+        rows.append(
+            {
+                "name": variable.name,
+                "value": float(plot.real[0, variable.index]),
+                "unit": variable.kind,
+                "source": "op.raw",
+            }
+        )
+    return rows
+
+
+def operating_point_report(path: Path) -> dict[str, object]:
+    """Return log operating points plus a sibling ``.op.raw`` when that file exists."""
+
+    points: list[dict[str, object]] = [
+        {**row, "source": "log"} for row in parse_operating_points(read_log_text(path))
+    ]
+    op_raw = path.with_name(path.stem + ".op.raw")
+    if op_raw.is_file():
+        points.extend(operating_points_from_raw(op_raw))
+    return {
+        "points": points,
+        "op_raw_path": str(op_raw) if op_raw.is_file() else None,
+    }
 
 
 def log_summary(path: Path) -> dict[str, object]:

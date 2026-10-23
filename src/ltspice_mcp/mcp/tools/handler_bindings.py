@@ -8,8 +8,10 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from ltspice_mcp.infra.call_context import bind_content_hash, bind_settings
 from ltspice_mcp.mcp.capabilities import describe_server_capabilities
 from ltspice_mcp.services._internals.service_catalog import build_service_callable_catalog
+from ltspice_mcp.services._shared.paths import resolve_workspace_path
 
 if TYPE_CHECKING:
     from ltspice_mcp.infra.config import LTspiceSettings
@@ -90,7 +92,14 @@ def build_handler(runtime: LTspiceToolRuntime, tool: ToolDefinition) -> ToolHand
         settings = _effective_settings(runtime, kwargs)
         if "extra_switches" in kwargs and isinstance(kwargs["extra_switches"], list):
             kwargs["extra_switches"] = tuple(str(item) for item in kwargs["extra_switches"])
-        return to_json_object(service_fn(**_call_kwargs(runtime, service_fn, kwargs, settings)))
+        raw_hash = kwargs.pop("expected_hash", None)
+        digest = raw_hash.strip() if isinstance(raw_hash, str) and raw_hash.strip() else None
+        raw_target = kwargs.get("destination_path") or kwargs.get("schematic_path")
+        target = None
+        if isinstance(raw_target, str) and raw_target.strip():
+            target = resolve_workspace_path(raw_target, workspace_root=settings.workspace_root)
+        with bind_settings(settings), bind_content_hash(digest, target):
+            return to_json_object(service_fn(**_call_kwargs(runtime, service_fn, kwargs, settings)))
 
     handler.__name__ = tool.name
     return handler

@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from ltspice_mcp.services._backends.schematic_checks import CHECK_OUTPUT_SCHEMA
 from ltspice_mcp.services.service_spec import ServiceSpec
 
 SERVICE_SPEC = ServiceSpec(
@@ -14,4 +15,5 @@ SERVICE_SPEC = ServiceSpec(
     long_running=False,
     destructive=False,
     idempotent=True,
+    output_schema=CHECK_OUTPUT_SCHEMA,
 )

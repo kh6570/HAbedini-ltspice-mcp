@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True, slots=True)
 class ProbeResult:
-    """Summary of the discovered LTspice executable."""
+    """Summary of the discovered LTspice executable and its sibling bridge."""
 
     configured: bool
     executable: Path | None
@@ -34,6 +34,9 @@ class ProbeResult:
     version: str | None = None
     version_source: VersionSource = "unavailable"
     note: str = ""
+    bridge_executable: Path | None = None
+    bridge_exists: bool = False
+    message_bridge: bool = False
 
     def summary(self) -> dict[str, object]:
         """Return a JSON-serializable probe summary."""
@@ -46,6 +49,11 @@ class ProbeResult:
             "version": self.version,
             "version_source": self.version_source,
             "note": self.note,
+            "bridge_executable": (
+                str(self.bridge_executable) if self.bridge_executable is not None else None
+            ),
+            "bridge_exists": self.bridge_exists,
+            "message_bridge": self.message_bridge,
         }
 
 
@@ -142,6 +150,32 @@ def schematic_version_line(exe_version: str | None) -> str:
     return "Version 4"
 
 
+def version_at_least(version: str | None, major: int, minor: int) -> bool:
+    """Return True when ``version`` is at least ``major.minor``."""
+
+    if version is None:
+        return False
+    numbers: list[int] = []
+    for piece in version.split("."):
+        if not piece.isdigit():
+            return False
+        numbers.append(int(piece))
+    if len(numbers) < 2:
+        return False
+    return (numbers[0], numbers[1]) >= (major, minor)
+
+
+def bridge_executable_for(executable: Path | None) -> Path | None:
+    """Return a sibling ``ltspice-mcp-bridge.exe`` when that file exists."""
+
+    if executable is None:
+        return None
+    candidate = executable.resolve(strict=False).parent / "ltspice-mcp-bridge.exe"
+    if candidate.is_file():
+        return candidate
+    return None
+
+
 def library_root(executable: Path | None) -> Path | None:
     """Return the LTspice ``lib`` directory next to the executable, if present."""
 
@@ -171,6 +205,10 @@ def probe_ltspice(settings: LTspiceSettings) -> ProbeResult:
     if exists:
         version, version_source = _detect_version_metadata(executable)
     note = "LTspice executable is available." if exists else "Configured executable is missing."
+    bridge = bridge_executable_for(executable) if exists else None
+    bridge_ready = bridge is not None and version_at_least(version, 26, 1)
+    if bridge_ready:
+        note = "LTspice 26.1 or newer is available and ltspice-mcp-bridge.exe is beside it."
     return ProbeResult(
         configured=settings.exe is not None,
         executable=executable,
@@ -179,6 +217,9 @@ def probe_ltspice(settings: LTspiceSettings) -> ProbeResult:
         version=version,
         version_source=version_source,
         note=note,
+        bridge_executable=bridge,
+        bridge_exists=bridge is not None,
+        message_bridge=bridge_ready,
     )
 
 

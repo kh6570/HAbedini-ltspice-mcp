@@ -1,0 +1,17 @@
+# In the name of God, the Most Gracious, the Most Merciful
+schema_version: 1
+license: MIT
+scope: cross-product
+version: "1.0"
+human-description: Start an LTspice task. The schematic is the source of truth, and batch runs stay on the netlist.
+requires-tools:
+  - prepare_transient
+  - run_simulation
+  - read_measures
+  - read_waveform
+requires-skills: []
+requires-products: []
+toolkit: ltspice-mcp
+when-not-to-use: Do not use this for the numbered run-and-measure steps or for convergence repair. Those are the optional ltspice-run-and-measure and ltspice-debug-convergence skills and are not auto-loaded.
+reference-files:
+  - batch-contract.md

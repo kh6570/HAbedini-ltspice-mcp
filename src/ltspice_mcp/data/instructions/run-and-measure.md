@@ -1,11 +1,7 @@
 In the name of God, the Most Gracious, the Most Merciful
 
-"""Run and measure an LTspice schematic.
+# Run and measure
 
-1. Keep the `.asc` file as the source of truth.
-2. Add one analysis directive, such as `.tran` or `.ac`.
-3. Add a `.meas` directive for the number you need.
-4. Call `run_simulation`.
-5. Read the measurement from the `.log` with `read_measures`.
-6. Use `read_waveform` when you need the trace, and stay inside the 2000 point budget.
-"""
+Follow the `ltspice-run-and-measure` skill and open `reference/workflow.md` beside that skill for the steps.
+
+The `.asc` file stays the source of truth.

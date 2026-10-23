@@ -18,6 +18,8 @@ from ltspice_mcp.adapters import describe_adapters, select_adapter
 from ltspice_mcp.adapters.probe import ProbeResult, probe_ltspice
 from ltspice_mcp.core.exceptions import (
     AdapterNotFoundError,
+    ConfigurationError,
+    ContentConflictError,
     LTspiceError,
     ParseError,
     SimulationError,
@@ -82,6 +84,9 @@ def _error_data(error: LTspiceError) -> ErrorData:
             data["line"] = error.line
         if error.column is not None:
             data["column"] = error.column
+    if isinstance(error, ContentConflictError):
+        data["expected_hash"] = error.expected_hash
+        data["actual_hash"] = error.actual_hash
     return ErrorData(code=_ERROR_CODE, message=str(error), data=data)
 
 
@@ -226,7 +231,11 @@ def create_server(settings: LTspiceSettings | None = None) -> LTspiceMCPServer:
         select_adapter(probe)
     describe_adapters(probe)
     definition = build_server_definition()
-    tools = build_tool_registry()
+    try:
+        profiles = effective.active_profile_names()
+        tools = build_tool_registry(active_profiles=profiles)
+    except ValueError as exc:
+        raise ConfigurationError(str(exc)) from exc
     registered = build_runtime_tool_registry(tools)
     resources = get_resource_definitions()
     runtime = LTspiceToolRuntime(effective, registered)

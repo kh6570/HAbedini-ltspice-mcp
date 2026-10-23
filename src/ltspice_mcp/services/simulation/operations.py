@@ -14,13 +14,15 @@ from ltspice_mcp.core.exceptions import (
 )
 from ltspice_mcp.infra.config import LTspiceSettings
 from ltspice_mcp.infra.subprocess_runner import _kill_process_tree
-from ltspice_mcp.services._backends.asc_document import Schematic, load_schematic, save_schematic
+from ltspice_mcp.services._backends.asc_document import Schematic, load_schematic
 from ltspice_mcp.services._backends.asc_edit import (
     set_component_value,
     set_element_model,
     upsert_directive,
 )
 from ltspice_mcp.services._backends.netlist_clean import render_clean_room_netlist
+from ltspice_mcp.services._backends.schematic_checks import schematic_findings
+from ltspice_mcp.services._backends.schematic_commit import commit_schematic
 from ltspice_mcp.services._backends.simulation_runner import run_netlist, run_simulation
 from ltspice_mcp.services._backends.waveform_math import find_signal, load_primary, split_steps
 from ltspice_mcp.services._internals.active_runs import cancel_run as lookup_run
@@ -34,6 +36,8 @@ from ltspice_mcp.services._shared.paths import (
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from mcp_app_core.checks import CheckFinding
+
 _SOURCE_SUFFIXES = (".asc", ".net", ".cir")
 
 
@@ -43,9 +47,22 @@ def _source(workspace_root: Path, source_path: str) -> Path:
     )
 
 
-def _schematic(workspace_root: Path, schematic_path: str) -> tuple[Path, Schematic]:
+def _schematic(
+    workspace_root: Path, schematic_path: str
+) -> tuple[Path, Schematic, tuple[CheckFinding, ...]]:
     path = validate_existing_file(schematic_path, workspace_root=workspace_root, suffixes=(".asc",))
-    return path, load_schematic(path)
+    schematic = load_schematic(path)
+    return path, schematic, schematic_findings(schematic)
+
+
+def _store(
+    path: Path,
+    schematic: Schematic,
+    previous: tuple[CheckFinding, ...],
+) -> dict[str, object]:
+    saved = commit_schematic(path, schematic, previous_findings=previous)
+    saved["path"] = str(path)
+    return saved
 
 
 def _edit_directive(
@@ -56,15 +73,14 @@ def _edit_directive(
     replace_command: str | None = None,
     comment_other_analyses: bool = False,
 ) -> dict[str, object]:
-    path, schematic = _schematic(workspace_root, schematic_path)
+    path, schematic, previous = _schematic(workspace_root, schematic_path)
     result = upsert_directive(
         schematic,
         text,
         replace_command=replace_command,
         comment_other_analyses=comment_other_analyses,
     )
-    save_schematic(path, schematic)
-    result["path"] = str(path)
+    result.update(_store(path, schematic, previous))
     return result
 
 
@@ -306,12 +322,11 @@ def prepare_meas(*, workspace_root: Path, schematic_path: str, statement: str) -
     body = statement.strip()
     if not body.lower().startswith(".meas"):
         body = f".meas {body}"
-    path, schematic = _schematic(workspace_root, schematic_path)
+    path, schematic, previous = _schematic(workspace_root, schematic_path)
     result = upsert_directive(
         schematic, body, replace_command=f"meas-unique-{len(schematic.texts())}"
     )
-    save_schematic(path, schematic)
-    result["path"] = str(path)
+    result.update(_store(path, schematic, previous))
     return result
 
 
@@ -402,7 +417,7 @@ def prepare_nodeset(
 def list_plot_suggestions(*, workspace_root: Path, schematic_path: str) -> dict[str, object]:
     """Suggest voltages and currents an agent can plot."""
 
-    _path, schematic = _schematic(workspace_root, schematic_path)
+    _path, schematic, _previous = _schematic(workspace_root, schematic_path)
     flags = [f"V({flag.name})" for flag in schematic.flags() if flag.name != "0"]
     currents = [f"I({symbol.reference()})" for symbol in schematic.symbols() if symbol.reference()]
     return {"voltages": flags, "currents": currents}
@@ -455,9 +470,9 @@ def _run_many(
 ) -> dict[str, object]:
     results: list[dict[str, object]] = []
     for reference, value in cases:
-        path, schematic = _schematic(workspace_root, schematic_path)
+        path, schematic, previous = _schematic(workspace_root, schematic_path)
         set_component_value(schematic, reference, value)
-        save_schematic(path, schematic)
+        _store(path, schematic, previous)
         results.append(
             {
                 "value": value,
@@ -521,9 +536,9 @@ def run_model_sweep(
 
     results: list[dict[str, object]] = []
     for model in [item.strip() for item in models.split(",") if item.strip()]:
-        path, schematic = _schematic(workspace_root, schematic_path)
+        path, schematic, previous = _schematic(workspace_root, schematic_path)
         set_element_model(schematic, reference, model)
-        save_schematic(path, schematic)
+        _store(path, schematic, previous)
         results.append(
             {
                 "model": model,
@@ -549,9 +564,9 @@ def prepare_monte_carlo(
 ) -> dict[str, object]:
     """Point a component at ``mc()`` and step the run index."""
 
-    path, schematic = _schematic(workspace_root, schematic_path)
+    path, schematic, previous = _schematic(workspace_root, schematic_path)
     set_component_value(schematic, reference, "{mcval}")
-    save_schematic(path, schematic)
+    _store(path, schematic, previous)
     upsert = prepare_param(
         workspace_root=workspace_root,
         schematic_path=schematic_path,
@@ -639,12 +654,12 @@ def prepare_loop_gain_analysis(
     )
     note = "Place a voltage source in the feedback path and give it an AC 1 stimulus."
     if injection_source:
-        path, schematic = _schematic(workspace_root, schematic_path)
+        path, schematic, previous = _schematic(workspace_root, schematic_path)
         symbol = schematic.find_symbol(injection_source)
         value = symbol.attr("Value") or "0"
         if "ac" not in value.lower():
             symbol.set_attr("Value", f"{value} AC 1")
-            save_schematic(path, schematic)
+            _store(path, schematic, previous)
         note = f"{injection_source} now includes AC 1."
     return {"ac": ac, "method": "middlebrook-tian-extra-source", "note": note}
 
@@ -659,9 +674,9 @@ def prepare_worst_case(
 ) -> dict[str, object]:
     """Step a component between two corner values with ``table()``."""
 
-    path, schematic = _schematic(workspace_root, schematic_path)
+    path, schematic, previous = _schematic(workspace_root, schematic_path)
     set_component_value(schematic, reference, "{corner_value}")
-    save_schematic(path, schematic)
+    _store(path, schematic, previous)
     prepare_param(
         workspace_root=workspace_root,
         schematic_path=schematic_path,

@@ -43,7 +43,7 @@ Cursor root key is `mcpServers`. VS Code root key is `servers`.
 ```json
 {
   "mcpServers": {
-    "ltspice": {
+    "ltspice-mcp": {
       "type": "stdio",
       "command": "PYTHON_EXE",
       "args": ["-u", "-m", "ltspice_mcp", "--workspace-root", "SIM_WORKSPACE", "--log-level", "error"],

@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Launch the LTspice GUI. There is no command channel into the window."""
+"""Launch the LTspice GUI. Window sync uses the 26.1 bridge when it is enabled."""
 
 from __future__ import annotations
 
@@ -8,31 +8,58 @@ from typing import TYPE_CHECKING
 
 from ltspice_mcp.adapters.probe import probe_ltspice
 from ltspice_mcp.core.exceptions import BackendUnavailableError, UnsupportedError
+from ltspice_mcp.infra.config import LTspiceSettings
 from ltspice_mcp.services._shared.paths import validate_existing_file
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from ltspice_mcp.infra.config import LTspiceSettings
-
 _PROCESSES: dict[str, subprocess.Popen[bytes]] = {}
 
 
-def describe_live_gui_support(*, workspace_root: Path) -> dict[str, object]:
-    """Describe the GUI launch support."""
+def describe_live_gui_support(
+    *,
+    workspace_root: Path,
+    settings: LTspiceSettings | None = None,
+) -> dict[str, object]:
+    """Describe GUI launch and the optional LTspice 26 window sync."""
 
     del workspace_root
+    probe = probe_ltspice(settings or LTspiceSettings())
+    if probe.message_bridge:
+        return {
+            "open_schematic": True,
+            "command_channel": True,
+            "launch_only": False,
+            "bridge_present": True,
+            "window_sync": "opt-in",
+            "note": (
+                "ltspice-mcp-bridge.exe is present for LTspice 26.1 or newer. "
+                "Window sync stays off until LTSPICE_WINDOW_SYNC=1. "
+                "When it is on, a save attaches only to a schematic you already opened, "
+                "does not start a hidden LTspice, and asks you to save first if that "
+                "window differs from the file on disk. After the file is saved, the new "
+                "text is pushed as one undo step."
+            ),
+        }
     return {
         "open_schematic": True,
         "command_channel": False,
-        "note": "LTspice can be launched on an .asc file. It has no message bridge.",
+        "launch_only": True,
+        "bridge_present": False,
+        "window_sync": "unavailable",
+        "note": (
+            "This LTspice build launches the schematic in a visible window. "
+            "Batch simulation stays on disk. Window sync needs LTspice 26.1 or newer "
+            "with ltspice-mcp-bridge.exe beside LTspice.exe."
+        ),
     }
 
 
 def _unsupported(action: str) -> dict[str, object]:
     raise UnsupportedError(
-        f"{action} is unavailable. LTspice has no GUI automation channel. "
-        "Open the schematic, edit the .asc, and run a batch simulation instead."
+        f"{action} is unavailable. Edit the .asc and run a batch simulation. "
+        "LTspice 26.1 window sync is opt-in and does not accept free-form commands."
     )
 
 

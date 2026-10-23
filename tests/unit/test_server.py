@@ -32,7 +32,14 @@ def test_describe_lists_ltspice_tools(tmp_path: Path) -> None:
     features = described["features"]
     assert isinstance(features, dict)
     assert features["dll_devices"] is False
-    assert features["gui_command_channel"] is False
+    hidden = described["hidden_groups"]
+    assert isinstance(hidden, list)
+    groups = {item["group"] for item in hidden if isinstance(item, dict)}
+    assert {"batch", "remote", "live_gui", "topology_ingest"} <= groups
+    enable = described["extended_profiles"]
+    assert isinstance(enable, dict)
+    assert "LTSPICE_ACTIVE_PROFILES=default,extended" in str(enable["enable"])
+    assert "no message bridge" not in str(described).lower()
 
 
 def test_gui_command_is_unsupported(tmp_path: Path) -> None:

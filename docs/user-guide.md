@@ -25,7 +25,7 @@ py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
 ```
 
-Or run `scripts\setup_mcp.ps1`, which installs the core, creates the venv, and merges an `ltspice` entry into the Cursor and VS Code user MCP configs. It leaves any existing `qspice` server in place.
+Or run `scripts\setup_mcp.ps1`, which installs the core, creates the venv, and merges an `ltspice-mcp` entry into the Cursor and VS Code user MCP configs. The name is `ltspice-mcp` so it does not collide with Analog's installer entry. It leaves any existing `qspice` server in place.
 
 ## Run
 
@@ -41,10 +41,16 @@ Useful flags:
 | `--ltspice-exe` | `LTSPICE_EXE` |
 | `--workspace-root` | `LTSPICE_WORKSPACE_ROOT` |
 | `--log-level` | `LTSPICE_LOG_LEVEL` |
+| `--active-profiles` | `LTSPICE_ACTIVE_PROFILES` |
+| `--window-sync` | `LTSPICE_WINDOW_SYNC` |
 
 The timeout is `LTSPICE_TIMEOUT_S` (default 120 seconds). Set it to `0` to disable the limit.
 
-The server probes, in order: `LTSPICE_EXE`, `Program Files\LTC\LTspiceXVII\XVIIx64.exe`, `Program Files\ADI\LTspice\LTspice.exe`, then the per-user ADI install. It reads the version from the executable and does not launch the GUI to ask for a version.
+The server probes, in order: `LTSPICE_EXE`, `Program Files\LTC\LTspiceXVII\XVIIx64.exe`, `Program Files\ADI\LTspice\LTspice.exe`, then the per-user ADI install. It reads the version from the executable and looks for `ltspice-mcp-bridge.exe` beside it. It does not launch the GUI to ask for a version.
+
+A normal session omits remote, batch, live GUI, and topology ingest. Set `LTSPICE_ACTIVE_PROFILES=default,extended` to load them. `describe_server_capabilities` lists the hidden groups.
+
+Existing schematic edits need `expected_hash` from the previous read. LTspice XVII stays launch-only. On 26.1 or newer, `LTSPICE_WINDOW_SYNC=1` attaches a save to a schematic you already have open and pushes the new text as one undo step. It does not start a hidden LTspice.
 
 ## Documentation
 

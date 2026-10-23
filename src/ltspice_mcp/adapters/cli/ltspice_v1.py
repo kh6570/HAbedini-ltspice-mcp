@@ -89,6 +89,10 @@ def build_batch_command(
     """
 
     _reject_reserved_switches(extra_switches)
+    if source.suffix.lower() == ".asc":
+        raise ValidationError(
+            "Batch mode cannot start from a schematic. Netlist the .asc, then run the .net."
+        )
     argv = [str(executable), "-b"]
     if ascii_raw:
         argv.append("-ascii")

@@ -46,7 +46,9 @@ def test_clean_room_divider_netlist_connects_output(tmp_path: Path) -> None:
     assert ".tran 1m" in text
     checked = check_schematic(workspace_root=tmp_path, schematic_path="divider.asc")
     assert checked["ok"] is True
-    assert checked["issues"] == []
+    assert checked["findings"] == []
+    assert isinstance(checked["content_hash"], str)
+    assert len(str(checked["content_hash"])) == 64
 
 
 def test_blank_schematic_and_sandbox(tmp_path: Path) -> None:

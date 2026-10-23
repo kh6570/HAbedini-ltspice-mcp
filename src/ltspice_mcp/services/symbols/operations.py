@@ -14,7 +14,6 @@ from ltspice_mcp.services._backends.asc_document import (
     IoPin,
     Schematic,
     load_schematic,
-    save_schematic,
 )
 from ltspice_mcp.services._backends.asc_edit import (
     add_library_symbol,
@@ -22,6 +21,8 @@ from ltspice_mcp.services._backends.asc_edit import (
     upsert_directive,
 )
 from ltspice_mcp.services._backends.asy_document import AsyPin, AsySymbol, save_asy, two_pin_box
+from ltspice_mcp.services._backends.schematic_checks import schematic_findings
+from ltspice_mcp.services._backends.schematic_commit import commit_schematic
 from ltspice_mcp.services._shared.paths import resolve_output_path, validate_existing_file
 from ltspice_mcp.services.schematic.operations import add_instruction
 
@@ -94,7 +95,8 @@ def add_hierarchical_block(
     child.records.append(IoPin(80, 48, "In"))
     child.records.append(IoPin(240, 48, "Out"))
     child.records.append(Flag(80, 160, "0"))
-    save_schematic(child_path, child)
+    child_previous = schematic_findings(load_schematic(child_path)) if child_path.is_file() else ()
+    commit_schematic(child_path, child, previous_findings=child_previous)
     symbol = AsySymbol()
     symbol.graphics.append("RECTANGLE Normal 0 0 96 64")
     symbol.attributes.append(("Prefix", "X"))
@@ -104,6 +106,7 @@ def add_hierarchical_block(
     symbol.pins.append(AsyPin(96, 16, "NONE", 0, "Out", 2))
     save_asy(symbol_path, symbol)
     parent_sheet = load_schematic(parent)
+    parent_previous = schematic_findings(parent_sheet)
     placed = add_library_symbol(
         parent_sheet,
         symbol_name=block_name,
@@ -115,7 +118,7 @@ def add_hierarchical_block(
     )
     parent_symbol = parent_sheet.find_symbol(reference)
     parent_symbol.set_attr("ModelFile", child_path.name)
-    save_schematic(parent, parent_sheet)
+    placed.update(commit_schematic(parent, parent_sheet, previous_findings=parent_previous))
     placed["child"] = str(child_path)
     placed["symbol_path"] = str(symbol_path)
     return placed
@@ -147,8 +150,9 @@ def scaffold_behavioral_subcircuit(
     )
     add_primitive(schematic, kind="ground", reference="", value="", x=160, y=176, rotation="R0")
     upsert_directive(schematic, ".op")
-    save_schematic(path, schematic)
-    return {"path": str(path), "expression": expression}
+    previous = schematic_findings(load_schematic(path)) if path.is_file() else ()
+    saved = commit_schematic(path, schematic, previous_findings=previous)
+    return {"path": str(path), "expression": expression, **saved}
 
 
 def scaffold_i2c_device(*, workspace_root: Path, output_path: str) -> dict[str, object]:

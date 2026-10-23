@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from io import BytesIO
+
 import matplotlib
 
 matplotlib.use("Agg", force=True)
@@ -10,14 +12,15 @@ from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 import numpy as np
+from mcp_app_core.images import ImageResult
 
 from ltspice_mcp.core.exceptions import ValidationError
 from ltspice_mcp.services._backends.log_parse import (
     log_summary,
+    operating_point_report,
     parse_fourier,
     parse_measures,
     parse_noise,
-    parse_operating_points,
     parse_steps,
     read_log_text,
 )
@@ -224,9 +227,16 @@ def plot_waveforms(
         suffixes=(".png",),
     )
     figure.tight_layout()
-    figure.savefig(destination, dpi=100)
+    buffer = BytesIO()
+    figure.savefig(buffer, format="png", dpi=100)
     plt.close(figure)
-    return {"path": str(destination), "signals": names}
+    png = buffer.getvalue()
+    destination.write_bytes(png)
+    summary = f"Plotted {', '.join(names)} from {source.name}."
+    if len(summary) > 280:
+        summary = f"Plotted {len(names)} signals from {source.name}."
+    image = ImageResult(png=png, summary=summary)
+    return {"path": str(destination), "signals": names, **image.as_dict()}
 
 
 def read_log(*, workspace_root: Path, log_path: str) -> dict[str, object]:
@@ -260,10 +270,21 @@ def read_measures(*, workspace_root: Path, log_path: str) -> dict[str, object]:
     return {"measures": parse_measures(read_log_text(_log(workspace_root, log_path)))}
 
 
-def read_device_operating_points(*, workspace_root: Path, log_path: str) -> dict[str, object]:
-    """Read operating-point rows from a log."""
+def _point_rows(report: dict[str, object]) -> list[dict[str, object]]:
+    rows = report.get("points")
+    if not isinstance(rows, list):
+        raise ValidationError("Operating-point rows were not a list.")
+    typed: list[dict[str, object]] = []
+    for row in rows:
+        if isinstance(row, dict):
+            typed.append({str(key): value for key, value in row.items()})
+    return typed
 
-    return {"points": parse_operating_points(read_log_text(_log(workspace_root, log_path)))}
+
+def read_device_operating_points(*, workspace_root: Path, log_path: str) -> dict[str, object]:
+    """Read operating-point rows from a log and a sibling ``.op.raw`` when present."""
+
+    return operating_point_report(_log(workspace_root, log_path))
 
 
 def filter_device_operating_points(
@@ -271,7 +292,7 @@ def filter_device_operating_points(
 ) -> dict[str, object]:
     """Keep operating-point rows whose name contains ``device``."""
 
-    rows = parse_operating_points(read_log_text(_log(workspace_root, log_path)))
+    rows = _point_rows(operating_point_report(_log(workspace_root, log_path)))
     needle = device.lower()
     return {"points": [row for row in rows if needle in str(row["name"]).lower()]}
 
@@ -279,7 +300,7 @@ def filter_device_operating_points(
 def summarize_device_operating_points(*, workspace_root: Path, log_path: str) -> dict[str, object]:
     """Count operating-point rows by unit."""
 
-    rows = parse_operating_points(read_log_text(_log(workspace_root, log_path)))
+    rows = _point_rows(operating_point_report(_log(workspace_root, log_path)))
     units: dict[str, int] = {}
     for row in rows:
         unit = str(row["unit"])

@@ -57,6 +57,13 @@ ERROR_CODE_DEFINITIONS: tuple[ErrorCodeDefinition, ...] = (
         mapped_exceptions=("ArtifactMissingError",),
     ),
     ErrorCodeDefinition(
+        code="content_conflict",
+        title="Content Conflict",
+        summary="A schematic save was refused because the file no longer matches the last read.",
+        status="implemented",
+        mapped_exceptions=("ContentConflictError",),
+    ),
+    ErrorCodeDefinition(
         code="schematic_invalid",
         title="Schematic Invalid",
         summary="The schematic structure is invalid or incomplete for the requested operation.",

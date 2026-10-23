@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import zipfile
+from io import BytesIO
 
 import matplotlib
 
@@ -11,6 +12,8 @@ matplotlib.use("Agg", force=True)
 from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
+from mcp_app_core.commit import file_content_sha256
+from mcp_app_core.images import ImageResult
 
 from ltspice_mcp.adapters.probe import probe_ltspice, schematic_version_line
 from ltspice_mcp.core.exceptions import ValidationError
@@ -23,7 +26,6 @@ from ltspice_mcp.services._backends.asc_document import (
     TextItem,
     Wire,
     load_schematic,
-    save_schematic,
 )
 from ltspice_mcp.services._backends.asc_edit import (
     add_junction,
@@ -53,6 +55,12 @@ from ltspice_mcp.services._backends.asy_document import (
     two_pin_box,
 )
 from ltspice_mcp.services._backends.netlist_clean import render_clean_room_netlist
+from ltspice_mcp.services._backends.schematic_checks import (
+    check_payload,
+    netlist_findings,
+    schematic_findings,
+)
+from ltspice_mcp.services._backends.schematic_commit import commit_schematic
 from ltspice_mcp.services._backends.starters import build_named
 from ltspice_mcp.services._shared.paths import (
     resolve_output_path,
@@ -63,6 +71,8 @@ from ltspice_mcp.services._shared.paths import (
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from mcp_app_core.checks import CheckFinding
+
     from ltspice_mcp.infra.config import LTspiceSettings
 
 _LAYOUTS = {
@@ -72,13 +82,27 @@ _LAYOUTS = {
 }
 
 
-def _load(workspace_root: Path, schematic_path: str) -> tuple[Path, Schematic]:
+def _load(
+    workspace_root: Path, schematic_path: str
+) -> tuple[Path, Schematic, tuple[CheckFinding, ...]]:
     path = validate_existing_file(schematic_path, workspace_root=workspace_root, suffixes=(".asc",))
-    return path, load_schematic(path)
+    schematic = load_schematic(path)
+    return path, schematic, schematic_findings(schematic)
 
 
-def _save(path: Path, schematic: Schematic) -> None:
-    save_schematic(path, schematic)
+def _existing_findings(path: Path) -> tuple[CheckFinding, ...]:
+    if not path.is_file():
+        return ()
+    return schematic_findings(load_schematic(path))
+
+
+def _save(
+    path: Path,
+    schematic: Schematic,
+    *,
+    previous: tuple[CheckFinding, ...],
+) -> dict[str, object]:
+    return commit_schematic(path, schematic, previous_findings=previous)
 
 
 def _version(settings: LTspiceSettings | None) -> str:
@@ -102,8 +126,8 @@ def create_schematic(
         suffixes=(".asc",),
     )
     schematic = Schematic(version=_version(settings))
-    _save(path, schematic)
-    return {"path": str(path), "version": schematic.version}
+    saved = _save(path, schematic, previous=_existing_findings(path))
+    return {"path": str(path), "version": schematic.version, **saved}
 
 
 def create_starter_schematic(
@@ -122,8 +146,13 @@ def create_starter_schematic(
         suffixes=(".asc",),
     )
     schematic = build_named(kind, _version(settings))
-    _save(path, schematic)
-    return {"path": str(path), "kind": kind, "components": len(schematic.symbols())}
+    saved = _save(path, schematic, previous=_existing_findings(path))
+    return {
+        "path": str(path),
+        "kind": kind,
+        "components": len(schematic.symbols()),
+        **saved,
+    }
 
 
 def save_schematic_as(
@@ -134,15 +163,15 @@ def save_schematic_as(
 ) -> dict[str, object]:
     """Copy a schematic to a new path."""
 
-    path, schematic = _load(workspace_root, schematic_path)
+    path, schematic, _source_findings = _load(workspace_root, schematic_path)
     destination = resolve_output_path(
         destination_path,
         workspace_root=workspace_root,
         default=path.with_name(path.stem + "-copy.asc"),
         suffixes=(".asc",),
     )
-    _save(destination, schematic)
-    return {"path": str(destination)}
+    saved = _save(destination, schematic, previous=_existing_findings(destination))
+    return {"path": str(destination), "source_hash": file_content_sha256(path), **saved}
 
 
 def add_component(
@@ -158,7 +187,7 @@ def add_component(
 ) -> dict[str, object]:
     """Place a primitive component."""
 
-    path, schematic = _load(workspace_root, schematic_path)
+    path, schematic, previous = _load(workspace_root, schematic_path)
     placed = add_primitive(
         schematic,
         kind=kind,
@@ -168,7 +197,7 @@ def add_component(
         y=y,
         rotation=rotation,
     )
-    _save(path, schematic)
+    placed.update(_save(path, schematic, previous=previous))
     placed["path"] = str(path)
     return placed
 
@@ -186,7 +215,7 @@ def add_library_component(
 ) -> dict[str, object]:
     """Place a library symbol by name."""
 
-    path, schematic = _load(workspace_root, schematic_path)
+    path, schematic, previous = _load(workspace_root, schematic_path)
     placed = add_library_symbol(
         schematic,
         symbol_name=symbol_name,
@@ -196,7 +225,7 @@ def add_library_component(
         y=y,
         rotation=rotation,
     )
-    _save(path, schematic)
+    placed.update(_save(path, schematic, previous=previous))
     placed["path"] = str(path)
     return placed
 
@@ -212,9 +241,9 @@ def add_wire_service(
 ) -> dict[str, object]:
     """Add a wire. Exposed as ``add_wire`` by the tool module."""
 
-    path, schematic = _load(workspace_root, schematic_path)
+    path, schematic, previous = _load(workspace_root, schematic_path)
     result = add_wire(schematic, x1=x1, y1=y1, x2=x2, y2=y2)
-    _save(path, schematic)
+    result.update(_save(path, schematic, previous=previous))
     result["path"] = str(path)
     return result
 
@@ -230,9 +259,9 @@ def remove_wire_service(
 ) -> dict[str, object]:
     """Remove a wire."""
 
-    path, schematic = _load(workspace_root, schematic_path)
+    path, schematic, previous = _load(workspace_root, schematic_path)
     result = remove_wire(schematic, x1=x1, y1=y1, x2=x2, y2=y2)
-    _save(path, schematic)
+    result.update(_save(path, schematic, previous=previous))
     return result
 
 
@@ -241,9 +270,9 @@ def add_junction_service(
 ) -> dict[str, object]:
     """Split a wire so a coordinate becomes a junction."""
 
-    path, schematic = _load(workspace_root, schematic_path)
+    path, schematic, previous = _load(workspace_root, schematic_path)
     result = add_junction(schematic, x=x, y=y)
-    _save(path, schematic)
+    result.update(_save(path, schematic, previous=previous))
     return result
 
 
@@ -252,7 +281,7 @@ def remove_junction_service(
 ) -> dict[str, object]:
     """Explain that LTspice junctions are implicit."""
 
-    _path, schematic = _load(workspace_root, schematic_path)
+    _path, schematic, _previous = _load(workspace_root, schematic_path)
     return remove_junction(schematic, x=x, y=y)
 
 
@@ -261,9 +290,9 @@ def add_net_label_service(
 ) -> dict[str, object]:
     """Add a net label."""
 
-    path, schematic = _load(workspace_root, schematic_path)
+    path, schematic, previous = _load(workspace_root, schematic_path)
     result = add_net_label(schematic, x=x, y=y, name=name)
-    _save(path, schematic)
+    result.update(_save(path, schematic, previous=previous))
     return result
 
 
@@ -277,9 +306,9 @@ def remove_net_label_service(
 ) -> dict[str, object]:
     """Remove a net label."""
 
-    path, schematic = _load(workspace_root, schematic_path)
+    path, schematic, previous = _load(workspace_root, schematic_path)
     result = remove_net_label(schematic, x=x, y=y, name=name)
-    _save(path, schematic)
+    result.update(_save(path, schematic, previous=previous))
     return result
 
 
@@ -293,13 +322,13 @@ def add_instruction(
 ) -> dict[str, object]:
     """Add a SPICE directive or a comment."""
 
-    path, schematic = _load(workspace_root, schematic_path)
+    path, schematic, previous = _load(workspace_root, schematic_path)
     if text.strip().startswith(";"):
         schematic.records.append(TextItem(x, y, "Left", 2, text.strip()))
-        _save(path, schematic)
-        return {"text": text.strip(), "comment": True}
+        saved = _save(path, schematic, previous=previous)
+        return {"text": text.strip(), "comment": True, **saved}
     result = upsert_directive(schematic, text, x=x, y=y)
-    _save(path, schematic)
+    result.update(_save(path, schematic, previous=previous))
     return result
 
 
@@ -308,9 +337,9 @@ def remove_instruction(
 ) -> dict[str, object]:
     """Remove a directive or comment containing ``text``."""
 
-    path, schematic = _load(workspace_root, schematic_path)
+    path, schematic, previous = _load(workspace_root, schematic_path)
     result = remove_directive(schematic, text)
-    _save(path, schematic)
+    result.update(_save(path, schematic, previous=previous))
     return result
 
 
@@ -319,9 +348,9 @@ def set_parameter(
 ) -> dict[str, object]:
     """Add or replace a ``.param`` directive."""
 
-    path, schematic = _load(workspace_root, schematic_path)
+    path, schematic, previous = _load(workspace_root, schematic_path)
     result = upsert_directive(schematic, f".param {name}={value}", replace_command="param")
-    _save(path, schematic)
+    result.update(_save(path, schematic, previous=previous))
     return result
 
 
@@ -330,9 +359,9 @@ def set_component_value_service(
 ) -> dict[str, object]:
     """Set a component value."""
 
-    path, schematic = _load(workspace_root, schematic_path)
+    path, schematic, previous = _load(workspace_root, schematic_path)
     result = set_component_value(schematic, reference, value)
-    _save(path, schematic)
+    result.update(_save(path, schematic, previous=previous))
     return result
 
 
@@ -346,9 +375,9 @@ def set_component_parameters_service(
 ) -> dict[str, object]:
     """Set SpiceLine attributes."""
 
-    path, schematic = _load(workspace_root, schematic_path)
+    path, schematic, previous = _load(workspace_root, schematic_path)
     result = set_component_parameters(schematic, reference, spice_line, spice_line2)
-    _save(path, schematic)
+    result.update(_save(path, schematic, previous=previous))
     return result
 
 
@@ -357,9 +386,9 @@ def set_element_model_service(
 ) -> dict[str, object]:
     """Set a component model."""
 
-    path, schematic = _load(workspace_root, schematic_path)
+    path, schematic, previous = _load(workspace_root, schematic_path)
     result = set_element_model(schematic, reference, model)
-    _save(path, schematic)
+    result.update(_save(path, schematic, previous=previous))
     return result
 
 
@@ -374,9 +403,9 @@ def set_component_position(
 ) -> dict[str, object]:
     """Move a component and wires that ended on its pins."""
 
-    path, schematic = _load(workspace_root, schematic_path)
+    path, schematic, previous = _load(workspace_root, schematic_path)
     result = move_component(schematic, reference, x=x, y=y, rotation=rotation)
-    _save(path, schematic)
+    result.update(_save(path, schematic, previous=previous))
     return result
 
 
@@ -389,9 +418,9 @@ def rename_component_reference(
 ) -> dict[str, object]:
     """Rename InstName."""
 
-    path, schematic = _load(workspace_root, schematic_path)
+    path, schematic, previous = _load(workspace_root, schematic_path)
     result = rename_reference(schematic, reference, new_reference)
-    _save(path, schematic)
+    result.update(_save(path, schematic, previous=previous))
     return result
 
 
@@ -400,9 +429,9 @@ def remove_component_service(
 ) -> dict[str, object]:
     """Remove a component."""
 
-    path, schematic = _load(workspace_root, schematic_path)
+    path, schematic, previous = _load(workspace_root, schematic_path)
     result = remove_component(schematic, reference)
-    _save(path, schematic)
+    result.update(_save(path, schematic, previous=previous))
     return result
 
 
@@ -411,7 +440,7 @@ def suggest_component_placement(
 ) -> dict[str, object]:
     """Suggest the next free grid point to the right of existing parts."""
 
-    _path, schematic = _load(workspace_root, schematic_path)
+    _path, schematic, _previous = _load(workspace_root, schematic_path)
     xs = [symbol.x for symbol in schematic.symbols()] or [0]
     return {"kind": kind, "x": max(xs) + 160, "y": 80, "rotation": "R0", "grid": 16}
 
@@ -419,9 +448,10 @@ def suggest_component_placement(
 def list_components(*, workspace_root: Path, schematic_path: str) -> dict[str, object]:
     """List placed components."""
 
-    path, schematic = _load(workspace_root, schematic_path)
+    path, schematic, _previous = _load(workspace_root, schematic_path)
     return {
         "path": str(path),
+        "content_hash": file_content_sha256(path),
         "components": [component_summary(symbol) for symbol in schematic.symbols()],
     }
 
@@ -431,17 +461,20 @@ def read_component(
 ) -> dict[str, object]:
     """Read one component."""
 
-    _path, schematic = _load(workspace_root, schematic_path)
-    return component_summary(schematic.find_symbol(reference))
+    path, schematic, _previous = _load(workspace_root, schematic_path)
+    summary = component_summary(schematic.find_symbol(reference))
+    summary["content_hash"] = file_content_sha256(path)
+    return summary
 
 
 def inspect_schematic(*, workspace_root: Path, schematic_path: str) -> dict[str, object]:
     """Summarize a schematic."""
 
-    path, schematic = _load(workspace_root, schematic_path)
+    path, schematic, _previous = _load(workspace_root, schematic_path)
     directives = [item.body() for item in schematic.texts() if item.is_directive]
     return {
         "path": str(path),
+        "content_hash": file_content_sha256(path),
         "version": schematic.version,
         "sheet": {"number": schematic.sheet, "width": schematic.width, "height": schematic.height},
         "counts": {
@@ -458,7 +491,7 @@ def inspect_schematic(*, workspace_root: Path, schematic_path: str) -> dict[str,
 def read_net_connectivity(*, workspace_root: Path, schematic_path: str) -> dict[str, object]:
     """Return primitive pin-to-net connectivity."""
 
-    _path, schematic = _load(workspace_root, schematic_path)
+    path, schematic, _previous = _load(workspace_root, schematic_path)
     nets = connect_nets(schematic)
     components: list[dict[str, object]] = []
     for symbol in schematic.symbols():
@@ -474,36 +507,36 @@ def read_net_connectivity(*, workspace_root: Path, schematic_path: str) -> dict[
             )
         components.append({"reference": symbol.reference(), "symbol": symbol.name, "pins": pins})
     named = sorted({flag.name for flag in schematic.flags()})
-    return {"components": components, "flag_names": named}
+    return {
+        "components": components,
+        "flag_names": named,
+        "content_hash": file_content_sha256(path),
+    }
 
 
 def check_schematic(*, workspace_root: Path, schematic_path: str) -> dict[str, object]:
     """Report structural problems without running LTspice."""
 
-    _path, schematic = _load(workspace_root, schematic_path)
-    issues: list[str] = []
-    if not any(flag.name == "0" for flag in schematic.flags()):
-        issues.append("No ground flag (FLAG ... 0).")
-    analyses = [item.command() for item in schematic.texts() if item.is_directive]
-    if not any(command in {"tran", "ac", "dc", "op", "noise", "tf"} for command in analyses):
-        issues.append("No analysis directive (.tran, .ac, .dc, .op, .noise, or .tf).")
-    seen: set[str] = set()
-    for symbol in schematic.symbols():
-        reference = symbol.reference()
-        if not reference:
-            issues.append(f"Symbol {symbol.name} has no InstName.")
-        elif reference in seen:
-            issues.append(f"Duplicate reference {reference}.")
-        seen.add(reference)
-    for wire in schematic.wires():
-        if wire.x1 != wire.x2 and wire.y1 != wire.y2:
-            issues.append(wire.emit() + " is diagonal.")
-    nets = connect_nets(schematic)
-    for symbol in schematic.symbols():
-        for pin in symbol_pins(symbol):
-            if (pin.x, pin.y) not in nets:
-                issues.append(f"{symbol.reference()} pin {pin.name} is not on a wire or flag.")
-    return {"ok": not issues, "issues": issues}
+    path, schematic, _previous = _load(workspace_root, schematic_path)
+    result = check_payload(schematic_findings(schematic))
+    result["path"] = str(path)
+    result["content_hash"] = file_content_sha256(path)
+    return result
+
+
+def check_netlist(*, workspace_root: Path, netlist_path: str) -> dict[str, object]:
+    """Report structural problems in a ``.net`` or ``.cir`` file."""
+
+    path = validate_existing_file(
+        netlist_path,
+        workspace_root=workspace_root,
+        suffixes=(".net", ".cir"),
+    )
+    text = path.read_text(encoding="latin-1", errors="replace")
+    result = check_payload(netlist_findings(text))
+    result["path"] = str(path)
+    result["content_hash"] = file_content_sha256(path)
+    return result
 
 
 def compare_schematics(
@@ -511,8 +544,8 @@ def compare_schematics(
 ) -> dict[str, object]:
     """Compare component values between two schematics."""
 
-    _left, left = _load(workspace_root, left_path)
-    _right, right = _load(workspace_root, right_path)
+    _left, left, _left_findings = _load(workspace_root, left_path)
+    _right, right, _right_findings = _load(workspace_root, right_path)
     left_map = {symbol.reference(): symbol.attr("Value") or "" for symbol in left.symbols()}
     right_map = {symbol.reference(): symbol.attr("Value") or "" for symbol in right.symbols()}
     changes = [
@@ -535,7 +568,7 @@ def render_schematic_image(
 ) -> dict[str, object]:
     """Draw a simple schematic preview."""
 
-    path, schematic = _load(workspace_root, schematic_path)
+    path, schematic, _previous = _load(workspace_root, schematic_path)
     destination = resolve_output_path(
         output_path or None,
         workspace_root=workspace_root,
@@ -554,9 +587,13 @@ def render_schematic_image(
     axis.set_aspect("equal")
     axis.set_title(path.name)
     figure.tight_layout()
-    figure.savefig(destination, dpi=100)
+    buffer = BytesIO()
+    figure.savefig(buffer, format="png", dpi=100)
     plt.close(figure)
-    return {"path": str(destination)}
+    png = buffer.getvalue()
+    destination.write_bytes(png)
+    image = ImageResult(png=png, summary=f"Schematic preview of {path.name}.")
+    return {"path": str(destination), **image.as_dict()}
 
 
 def describe_edit_capability(*, workspace_root: Path) -> dict[str, object]:
@@ -619,7 +656,7 @@ def export_symbol_to_asy(
 ) -> dict[str, object]:
     """Write a two-pin ``.asy`` named for a placed component."""
 
-    _path, schematic = _load(workspace_root, schematic_path)
+    _path, schematic, _previous = _load(workspace_root, schematic_path)
     symbol = schematic.find_symbol(reference)
     destination = resolve_output_path(
         output_path,
@@ -734,15 +771,15 @@ def normalize_component_text_rotation(
 ) -> dict[str, object]:
     """Reset attribute windows to left-justified text."""
 
-    path, schematic = _load(workspace_root, schematic_path)
+    path, schematic, previous = _load(workspace_root, schematic_path)
     changed = 0
     for symbol in schematic.symbols():
         for window in symbol.windows:
             if window.justification != "Left":
                 window.justification = "Left"
                 changed += 1
-    _save(path, schematic)
-    return {"changed_windows": changed}
+    saved = _save(path, schematic, previous=previous)
+    return {"changed_windows": changed, **saved}
 
 
 def describe_schematic_layout_spec(
@@ -771,8 +808,8 @@ def apply_schematic_layout_spec(
         suffixes=(".asc",),
     )
     schematic = build_named(spec_name, _version(settings))
-    _save(path, schematic)
-    return {"path": str(path), "spec_name": spec_name}
+    saved = _save(path, schematic, previous=_existing_findings(path))
+    return {"path": str(path), "spec_name": spec_name, **saved}
 
 
 def import_circuit_bundle(
@@ -828,7 +865,7 @@ def materialize_reference_circuit(
 def clean_netlist_text(*, workspace_root: Path, schematic_path: str) -> str:
     """Return the clean-room netlist text."""
 
-    _path, schematic = _load(workspace_root, schematic_path)
+    _path, schematic, _previous = _load(workspace_root, schematic_path)
     return render_clean_room_netlist(schematic)
 
 

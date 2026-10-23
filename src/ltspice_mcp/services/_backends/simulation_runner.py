@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import shutil
+import time
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -102,6 +103,27 @@ def run_netlist(
     return netlist
 
 
+def discard_sibling_outputs(source: Path) -> None:
+    """Delete the previous log, raw, and operating-point raw beside ``source``."""
+
+    for path in (
+        source.with_suffix(".log"),
+        source.with_suffix(".raw"),
+        source.with_name(source.stem + ".op.raw"),
+    ):
+        path.unlink(missing_ok=True)
+
+
+def require_fresh_log(path: Path, *, started_at: float) -> str:
+    """Return log text only when this run wrote a newer log."""
+
+    if not path.is_file() or path.stat().st_mtime <= started_at:
+        raise SimulationError(
+            "LTspice did not write a new log for this run. The previous log was ignored."
+        )
+    return read_ltspice_text(path)
+
+
 def run_simulation(
     source: Path,
     *,
@@ -134,6 +156,9 @@ def run_simulation(
         log_text = read_ltspice_text(command.log_path) if command.log_path.is_file() else ""
         return _result_payload(command, log_text, cache_hit=True, return_code=0)
 
+    discard_sibling_outputs(batch_source)
+    started_at = time.time()
+
     def _on_start(process: subprocess.Popen[str]) -> None:
         register_run(str(source.resolve()), process)
 
@@ -147,14 +172,14 @@ def run_simulation(
     finally:
         pop_run(str(source.resolve()))
 
-    if not command.log_path.is_file():
-        raise ArtifactMissingError(f"LTspice did not write a log at {command.log_path}.")
-    log_text = read_ltspice_text(command.log_path)
+    log_text = require_fresh_log(command.log_path, started_at=started_at)
     classify_simulation_log(log_text, return_code=completed.return_code)
     if command.raw_path is not None and not command.raw_path.is_file():
         raise ArtifactMissingError(f"LTspice did not write a raw file at {command.raw_path}.")
+    op_raw = command.log_path.with_name(command.log_path.stem + ".op.raw")
     if use_cache:
-        _store_cache(bucket, outputs)
+        stored = (*outputs, op_raw) if op_raw.is_file() else outputs
+        _store_cache(bucket, stored)
     return _result_payload(command, log_text, cache_hit=False, return_code=completed.return_code)
 
 
@@ -173,4 +198,12 @@ def _result_payload(
         "raw_path": str(command.raw_path) if command.raw_path is not None else None,
         "netlist_path": str(command.netlist_path) if command.netlist_path is not None else None,
         "log_excerpt": "\n".join(log_text.splitlines()[-20:]),
+        "op_raw_path": _op_raw_path(command.log_path),
     }
+
+
+def _op_raw_path(log_path: Path) -> str | None:
+    candidate = log_path.with_name(log_path.stem + ".op.raw")
+    if candidate.is_file():
+        return str(candidate)
+    return None

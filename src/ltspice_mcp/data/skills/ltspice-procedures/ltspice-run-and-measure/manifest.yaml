@@ -1,0 +1,18 @@
+# In the name of God, the Most Gracious, the Most Merciful
+schema_version: 1
+license: MIT
+scope: cross-product
+version: "1.0"
+human-description: Run an LTspice schematic and read a bounded measurement from the log or waveform.
+requires-tools:
+  - prepare_transient
+  - run_simulation
+  - read_measures
+  - read_waveform
+requires-skills:
+  - ltspice-getting-started
+requires-products: []
+toolkit: ltspice-mcp
+when-not-to-use: Do not use this to debug a convergence failure. Use ltspice-debug-convergence when the log shows a timestep or singular-matrix failure.
+reference-files:
+  - workflow.md

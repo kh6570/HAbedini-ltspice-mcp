@@ -8,9 +8,11 @@ import math
 from typing import TYPE_CHECKING
 
 import numpy as np
+from mcp_app_core.errors import BudgetExceededError as CoreBudgetExceededError
+from mcp_app_core.errors import ValidationError as CoreValidationError
 
-from ltspice_mcp.core.budgets import DEFAULT_BUDGET, DataBudget, downsample_indices
-from ltspice_mcp.core.exceptions import ParseError, ValidationError
+from ltspice_mcp.core.budgets import DEFAULT_BUDGET, DataBudget
+from ltspice_mcp.core.exceptions import BudgetExceededError, ParseError, ValidationError
 from ltspice_mcp.services._backends.raw_file import RawPlot, load_raw
 
 if TYPE_CHECKING:
@@ -66,15 +68,16 @@ def apply_budget(
 ) -> tuple[list[float], list[float], list[float] | None, bool]:
     """Downsample a trace to the data budget."""
 
-    active = budget or DEFAULT_BUDGET
-    if max_points is not None:
-        active = DataBudget(
-            max_points=max_points, max_bytes=active.max_bytes, strategy=active.strategy
-        )
-    target = active.target_points(len(x_values))
-    indices = downsample_indices(
-        len(x_values), max(target, 2) if len(x_values) >= 2 else len(x_values)
-    )
+    base = budget or DEFAULT_BUDGET
+    point_cap = max_points if max_points is not None else base.max_points
+    active = DataBudget(max_points=point_cap, max_bytes=base.max_bytes, strategy="minmax")
+    samples = [float(abs(value)) for value in y_values]
+    try:
+        indices = active.select_indices(len(samples), values=samples)
+    except CoreValidationError as exc:
+        raise ValidationError(str(exc)) from exc
+    except CoreBudgetExceededError as exc:
+        raise BudgetExceededError(str(exc)) from exc
     if len(x_values) >= 2 and len(indices) < 2:
         raise ParseError("Waveform budget left fewer than two points.")
     xs = [float(x_values[index]) for index in indices]

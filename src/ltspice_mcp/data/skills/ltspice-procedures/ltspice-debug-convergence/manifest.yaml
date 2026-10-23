@@ -1,0 +1,16 @@
+# In the name of God, the Most Gracious, the Most Merciful
+schema_version: 1
+license: MIT
+scope: cross-product
+version: "1.0"
+human-description: Debug an LTspice run that fails to converge or stops before the requested time.
+requires-tools:
+  - read_log
+  - run_simulation
+requires-skills:
+  - ltspice-getting-started
+requires-products: []
+toolkit: ltspice-mcp
+when-not-to-use: Do not use this for a successful run that already finished, and do not use it to author a new schematic. Use ltspice-run-and-measure to take a measurement.
+reference-files:
+  - workflow.md

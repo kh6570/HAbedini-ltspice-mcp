@@ -4,7 +4,13 @@ In the name of God, the Most Gracious, the Most Merciful
 
 Each tool is one module under `services/<group>/`. File arguments are resolved inside `--workspace-root`.
 
-145 tools are implemented. Sections follow the first word of the tool name. Each entry is the one-line contract and the arguments you must pass.
+A normal session loads the default profile. Remote, batch, live GUI, and topology ingest stay hidden until `LTSPICE_ACTIVE_PROFILES=default,extended` or `--active-profiles default,extended`. `describe_server_capabilities` lists those groups and how to enable them.
+
+Schematic saves of an existing file require `expected_hash`, the SHA-256 from the last read (`content_hash` on inspect, list, read, and check results). A mismatch writes nothing. One place-and-wire layout commits once. Edit replies list `findings.previous` and `findings.introduced`.
+
+`plot_waveforms` and `render_schematic_image` write a PNG and also return `summary`, `media_type`, and `png_base64`. Waveform downsampling keeps bucket minima and maxima.
+
+Sections follow the first word of the tool name. Each entry is the one-line contract and the arguments you must pass.
 
 ## add
 
@@ -98,9 +104,15 @@ Required arguments: batch_id.
 
 ## check
 
+### check_netlist
+
+Report structural problems in a .net or .cir file. Each finding has `location` and `fixable`.
+
+Required arguments: netlist_path.
+
 ### check_schematic
 
-Report structural problems without running LTspice.
+Report structural problems without running LTspice. Each finding has `location` and `fixable`.
 
 Required arguments: schematic_path.
 

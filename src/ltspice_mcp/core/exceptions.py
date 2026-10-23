@@ -32,6 +32,24 @@ class ArtifactMissingError(LTspiceError):
     default_error_code = "artifact_missing"
 
 
+class ContentConflictError(LTspiceError):
+    """The schematic changed since the hash from the last read."""
+
+    default_error_code = "content_conflict"
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        expected_hash: str,
+        actual_hash: str,
+        error_code: str | None = None,
+    ) -> None:
+        super().__init__(message, error_code=error_code)
+        self.expected_hash = expected_hash
+        self.actual_hash = actual_hash
+
+
 class BatchConflictError(LTspiceError):
     """The requested retained-batch action conflicts with persisted state."""
 

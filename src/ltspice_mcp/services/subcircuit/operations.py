@@ -7,12 +7,16 @@ import re
 from typing import TYPE_CHECKING
 
 from ltspice_mcp.core.exceptions import ValidationError
-from ltspice_mcp.services._backends.asc_document import IoPin, load_schematic, save_schematic
+from ltspice_mcp.services._backends.asc_document import IoPin, Schematic, load_schematic
 from ltspice_mcp.services._backends.asc_edit import set_component_parameters, set_component_value
+from ltspice_mcp.services._backends.schematic_checks import schematic_findings
+from ltspice_mcp.services._backends.schematic_commit import commit_schematic
 from ltspice_mcp.services._shared.paths import resolve_workspace_path, validate_existing_file
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+    from mcp_app_core.checks import CheckFinding
 
 _SUBCKT = re.compile(r"^\.subckt\s+(\S+)", re.IGNORECASE)
 _ENDS = re.compile(r"^\.ends\b", re.IGNORECASE)
@@ -88,6 +92,14 @@ def read_subcircuit(*, workspace_root: Path, source_path: str, name: str) -> dic
     return {"name": name, "text": "\n".join(body)}
 
 
+def _store(
+    path: Path, schematic: Schematic, previous: tuple[CheckFinding, ...]
+) -> dict[str, object]:
+    saved = commit_schematic(path, schematic, previous_findings=previous)
+    saved["path"] = str(path)
+    return saved
+
+
 def set_subcircuit_component_value(
     *,
     workspace_root: Path,
@@ -99,8 +111,9 @@ def set_subcircuit_component_value(
 
     path = validate_existing_file(schematic_path, workspace_root=workspace_root, suffixes=(".asc",))
     schematic = load_schematic(path)
+    previous = schematic_findings(schematic)
     result = set_component_value(schematic, reference, value)
-    save_schematic(path, schematic)
+    result.update(_store(path, schematic, previous))
     return result
 
 
@@ -116,6 +129,7 @@ def set_subcircuit_component_parameters(
 
     path = validate_existing_file(schematic_path, workspace_root=workspace_root, suffixes=(".asc",))
     schematic = load_schematic(path)
+    previous = schematic_findings(schematic)
     result = set_component_parameters(schematic, reference, spice_line, spice_line2)
-    save_schematic(path, schematic)
+    result.update(_store(path, schematic, previous))
     return result

@@ -26,6 +26,8 @@ class LTspiceSettings(AppSettings):
     session_mode: Literal["cold", "auto"] = "cold"
     recipe_path: Path | None = None
     telemetry_enabled: bool = False
+    active_profiles: str = "default"
+    window_sync: bool = False
     cache_app_name: ClassVar[str] = "ltspice-mcp"
 
     model_config = SettingsConfigDict(
@@ -56,6 +58,14 @@ class LTspiceSettings(AppSettings):
             }
         )
 
+    def active_profile_names(self) -> tuple[str, ...]:
+        """Return the profiles a normal or extended session should load."""
+
+        names = tuple(part.strip() for part in self.active_profiles.split(",") if part.strip())
+        if not names:
+            raise ValueError("active_profiles must name at least one profile.")
+        return names
+
     def resolve_timeout_s(self, explicit: float | None) -> float | None:
         """Return an explicit per-call timeout or the configured default.
 
@@ -81,6 +91,8 @@ class LTspiceSettings(AppSettings):
         recipe_path: Path | None = None,
         enable_sse: bool | None = None,
         session_mode: Literal["cold", "auto"] | None = None,
+        active_profiles: str | None = None,
+        window_sync: bool | None = None,
     ) -> Self:
         """Apply explicit CLI overrides on top of environment-loaded settings."""
 
@@ -89,6 +101,10 @@ class LTspiceSettings(AppSettings):
             updates["transport"] = transport
         if session_mode is not None:
             updates["session_mode"] = session_mode
+        if active_profiles is not None:
+            updates["active_profiles"] = active_profiles
+        if window_sync is not None:
+            updates["window_sync"] = window_sync
         if exe is not None:
             updates["exe"] = exe
         if workspace_root is not None:
@@ -117,6 +133,8 @@ def build_settings(
     recipe_path: Path | None = None,
     enable_sse: bool | None = None,
     session_mode: Literal["cold", "auto"] | None = None,
+    active_profiles: str | None = None,
+    window_sync: bool | None = None,
 ) -> LTspiceSettings:
     """Load settings from the environment and apply explicit CLI overrides."""
 
@@ -130,4 +148,6 @@ def build_settings(
         recipe_path=recipe_path,
         enable_sse=enable_sse,
         session_mode=session_mode,
+        active_profiles=active_profiles,
+        window_sync=window_sync,
     )
