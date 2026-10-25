@@ -2,8 +2,8 @@
 """Clean-room reader and writer for LTspice ``.asc`` schematics.
 
 ``.asc`` files are Windows-1252 text. This module reads and writes them as
-Latin-1, which preserves every byte LTspice stores, including the micro sign
-at ``0xB5``. Newly authored values use ASCII ``u`` rather than ``µ``.
+Latin-1. Latin-1 keeps every byte that LTspice stores. The micro sign at
+``0xB5`` is one of those bytes. Newly authored values use ASCII ``u`` rather than ``µ``.
 """
 
 from __future__ import annotations
@@ -71,7 +71,7 @@ class Symbol:
     attributes: list[tuple[str, str]] = field(default_factory=list)
 
     def attr(self, key: str) -> str | None:
-        """Return one attribute value, matching names without case."""
+        """Return one attribute value. Ignore case in the name."""
 
         for name, value in self.attributes:
             if name.lower() == key.lower():
@@ -79,7 +79,7 @@ class Symbol:
         return None
 
     def set_attr(self, key: str, value: str) -> None:
-        """Insert or replace one attribute, preserving the original key spelling."""
+        """Insert or replace one attribute. Keep the original key letters."""
 
         for index, (name, _value) in enumerate(self.attributes):
             if name.lower() == key.lower():
@@ -174,7 +174,7 @@ class TextItem:
 
 @dataclass
 class Graphic:
-    """A non-electrical drawing primitive stored on the schematic."""
+    """A non-electrical graphic that the schematic stores."""
 
     kind: str
     args: tuple[str, ...]
@@ -436,12 +436,6 @@ def load_schematic(path: Path) -> Schematic:
         raise
     except OSError as exc:
         raise ParseError(f"Could not read schematic {path}: {exc}") from exc
-
-
-def save_schematic(path: Path, schematic: Schematic) -> None:
-    """Write an ``.asc`` file."""
-
-    write_text(path, schematic.emit())
 
 
 def blank_schematic(*, version: str = "Version 4") -> Schematic:

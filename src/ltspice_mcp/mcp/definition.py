@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Server metadata used by the MCP bootstrap layer."""
+"""Server metadata that the MCP bootstrap layer uses."""
 
 from __future__ import annotations
 

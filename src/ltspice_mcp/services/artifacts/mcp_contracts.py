@@ -19,7 +19,7 @@ MCP_CONTRACTS: dict[str, dict[str, object]] = {
     },
     "export_derived_raw": {
         "title": "Export Derived Raw",
-        "description": "Write a small ASCII raw file containing one trace.",
+        "description": "Write a small ASCII raw file that contains one trace.",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -41,7 +41,7 @@ MCP_CONTRACTS: dict[str, dict[str, object]] = {
     },
     "export_touchstone_s2p": {
         "title": "Export Touchstone S2p",
-        "description": "Write a one-port-style S2P using S21 = output/reference and the other terms at 0.",
+        "description": "Write a one-port-style S2P. Set S21 equal to output/reference. Set the other terms to 0.",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -95,7 +95,7 @@ MCP_CONTRACTS: dict[str, dict[str, object]] = {
     },
     "merge_waveforms": {
         "title": "Merge Waveforms",
-        "description": "Return two traces side by side without writing a combined raw file.",
+        "description": "Return two traces side by side. Do not write a combined raw file.",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -108,7 +108,7 @@ MCP_CONTRACTS: dict[str, dict[str, object]] = {
     },
     "summarize_batch": {
         "title": "Summarize Batch",
-        "description": "Summarize raw files sitting in a batch directory.",
+        "description": "Summarize the raw files in a batch directory.",
         "input_schema": {
             "type": "object",
             "properties": {"batch_dir": {"type": "string"}},

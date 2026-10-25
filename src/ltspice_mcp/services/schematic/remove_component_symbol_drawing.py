@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Remove one symbol drawing by index."""
+"""Remove one symbol graphic by index."""
 
 from __future__ import annotations
 

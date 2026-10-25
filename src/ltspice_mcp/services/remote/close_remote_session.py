@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Drop a session from memory. Files on disk are left in place."""
+"""Drop a session from memory. The files stay in place on the disk."""
 
 from __future__ import annotations
 

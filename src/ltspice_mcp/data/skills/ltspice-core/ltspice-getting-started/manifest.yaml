@@ -12,6 +12,6 @@ requires-tools:
 requires-skills: []
 requires-products: []
 toolkit: ltspice-mcp
-when-not-to-use: Do not use this for the numbered run-and-measure steps or for convergence repair. Those are the optional ltspice-run-and-measure and ltspice-debug-convergence skills and are not auto-loaded.
+when-not-to-use: Do not use this for the numbered run-and-measure steps or for convergence repair. Those are the optional ltspice-run-and-measure and ltspice-debug-convergence skills. These skills do not load automatically.
 reference-files:
   - batch-contract.md

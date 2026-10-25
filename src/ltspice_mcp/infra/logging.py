@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Structured logging helpers for ltspice-mcp."""
+"""Structured log helpers for ltspice-mcp."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ _LOG_FILE_BACKUP_COUNT = 3
 
 
 def _attach_file_handler(log_folder: Path, numeric_level: int) -> None:
-    """Add a rotating file handler under ``log_folder`` to the root logger."""
+    """Add a RotatingFileHandler under ``log_folder`` to the root logger."""
 
     log_folder.mkdir(parents=True, exist_ok=True)
     log_path = (log_folder / _LOG_FILE_NAME).resolve(strict=False)
@@ -43,7 +43,7 @@ def _attach_file_handler(log_folder: Path, numeric_level: int) -> None:
 def configure_logging(
     level: str = "info", *, log_folder: str | PathLike[str] | None = None
 ) -> None:
-    """Configure stdlib and structlog logging once per process."""
+    """Configure the stdlib log and structlog once per process."""
 
     numeric_level = getattr(logging, level.upper(), logging.INFO)
     logging.basicConfig(level=numeric_level, format="%(message)s")

@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Place a symbol using the file name of an ``.asy`` in the workspace."""
+"""Place a symbol. Use the file name of an ``.asy`` in the workspace."""
 
 from __future__ import annotations
 

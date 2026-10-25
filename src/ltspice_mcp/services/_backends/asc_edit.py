@@ -173,7 +173,7 @@ def add_net_label(schematic: Schematic, *, x: int, y: int, name: str) -> dict[st
 
 
 def remove_net_label(schematic: Schematic, *, x: int, y: int, name: str = "") -> dict[str, object]:
-    """Remove a flag at a point, optionally matching its name."""
+    """Remove a flag at a point. The name match is optional."""
 
     kept: list[object] = []
     removed = 0
@@ -194,8 +194,8 @@ def remove_net_label(schematic: Schematic, *, x: int, y: int, name: str = "") ->
 def add_junction(schematic: Schematic, *, x: int, y: int) -> dict[str, object]:
     """Split any wire that passes through this grid point.
 
-    LTspice has no junction keyword. A connection exists only where endpoints meet,
-    so a wire that merely crosses a coordinate is split there.
+    LTspice has no junction keyword. A connection exists only where the endpoints meet.
+    The editor splits a wire at that coordinate when the wire only crosses it.
     """
 
     x, y = snap_coord(x), snap_coord(y)
@@ -229,7 +229,7 @@ def add_junction(schematic: Schematic, *, x: int, y: int) -> dict[str, object]:
 
 
 def remove_junction(schematic: Schematic, *, x: int, y: int) -> dict[str, object]:
-    """Report that a junction cannot be deleted as its own object."""
+    """Report that you cannot delete a junction as its own object."""
 
     meeting = 0
     for wire in schematic.wires():

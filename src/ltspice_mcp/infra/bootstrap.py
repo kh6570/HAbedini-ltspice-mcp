@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Environment readiness reporting for the ``--setup`` subcommand."""
+"""This module reports environment readiness for the ``--setup`` subcommand."""
 
 from __future__ import annotations
 

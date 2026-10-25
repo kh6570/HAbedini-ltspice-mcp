@@ -29,21 +29,6 @@ class AdapterDescription:
     summary: str
     capabilities: AdapterCapabilities = field(default_factory=AdapterCapabilities)
 
-    def to_dict(self) -> dict[str, object]:
-        """Return a JSON-serializable adapter summary."""
-
-        return {
-            "key": self.key,
-            "title": self.title,
-            "summary": self.summary,
-            "capabilities": {
-                "netlist": self.capabilities.netlist,
-                "batch_simulation": self.capabilities.batch_simulation,
-                "ascii_raw": self.capabilities.ascii_raw,
-                "private_ini": self.capabilities.private_ini,
-            },
-        }
-
 
 @dataclass(frozen=True, slots=True)
 class SimulationCommand:

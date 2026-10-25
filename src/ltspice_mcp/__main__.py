@@ -37,7 +37,7 @@ def _configure_stdio_utf8() -> None:
 def build_arg_parser() -> argparse.ArgumentParser:
     """Build the CLI argument parser.
 
-    Each setting-bearing flag mirrors an ``LTSPICE_*`` environment variable.
+    Each configuration flag mirrors an ``LTSPICE_*`` environment variable.
     The CLI value wins.
     """
 

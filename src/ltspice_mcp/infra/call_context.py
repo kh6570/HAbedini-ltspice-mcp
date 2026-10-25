@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Per-call settings and the schematic hash supplied with a tool invocation."""
+"""The settings for one call, and the schematic hash that a tool invocation supplies."""
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ _HASH: ContextVar[ContentHashContext | None] = ContextVar("ltspice_content_hash"
 
 
 def current_settings() -> LTspiceSettings | None:
-    """Return the settings bound for this tool call, if a handler set them."""
+    """Return the settings for this tool call when a handler set them."""
 
     return _SETTINGS.get()
 

@@ -1,7 +1,7 @@
 # In the name of God, the Most Gracious, the Most Merciful
 """Opt-in LTspice 26 window sync through ltspice-mcp-bridge.
 
-The bridge is spoken to as a normal MCP client. This module never passes
+This module speaks to the bridge as a normal MCP client. This module never passes
 ``--headless`` and never calls ``start_headless`` or ``open_design``. A save
 attaches only when ``status`` already shows a GUI the user opened.
 """
@@ -40,7 +40,7 @@ class BridgeUnavailableError(Exception):
 
 
 class DesignBridge(Protocol):
-    """The few bridge tools window sync is allowed to call."""
+    """This class lists the few bridge tools that window sync can call."""
 
     def tool_names(self) -> set[str]:
         """Return the tool names the bridge advertised."""
@@ -63,7 +63,7 @@ class DesignBridge(Protocol):
 
 @dataclass(frozen=True, slots=True)
 class SyncPlan:
-    """Whether the save should push text back into an open window."""
+    """Whether the save has to push text back into an open window."""
 
     push: bool
     reason: str
@@ -81,7 +81,7 @@ def texts_match(disk_text: str, buffer_text: str) -> bool:
 def user_gui_pid(status: dict[str, object]) -> int | None:
     """Return the pid of a GUI the user opened.
 
-    Headless and auto-started instances are ignored. This function does not
+    The function ignores headless instances and auto-started instances. This function does not
     start LTspice.
     """
 
@@ -103,7 +103,7 @@ def user_gui_pid(status: dict[str, object]) -> int | None:
 
 
 def parse_status(text: str) -> dict[str, object]:
-    """Parse the JSON object returned by the bridge ``status`` tool."""
+    """Parse the JSON object that the bridge ``status`` tool returns."""
 
     loaded = _json_object(text)
     if loaded is None:
@@ -266,7 +266,7 @@ def run_window_guard(
     saved_text: str,
     write: Callable[[], str],
 ) -> tuple[str, dict[str, object] | None]:
-    """Write ``path``, pushing the new text when an open window matches disk.
+    """Write ``path``. Push the new text when an open window matches the disk.
 
     ``write`` returns the content hash of the bytes it stored. A dirty open
     buffer raises ``ValidationError`` before ``write`` runs.

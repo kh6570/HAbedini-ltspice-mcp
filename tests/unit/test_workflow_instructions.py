@@ -13,8 +13,8 @@ from ltspice_mcp.services.instructions.operations import (
     read_workflow_instruction,
 )
 
-_RUN_STEP = "Use `read_waveform` when you need the trace, and stay inside the 2000 point budget."
-_DEBUG_STEP = "A missing `FLAG ... 0` is the usual first problem."
+_RUN_STEP = "Use `read_waveform` when you need the trace. Stay inside the 2000 point budget."
+_DEBUG_STEP = "An absent `FLAG ... 0` is the usual first problem."
 
 
 def _skill_dir(group: str, name: str) -> Path:

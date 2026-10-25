@@ -11,11 +11,11 @@ In the name of God, the Most Gracious, the Most Merciful
 - LTspice 26.1 reports `ltspice-mcp-bridge.exe` when it sits beside `LTspice.exe`. Window sync is opt-in and attaches only to a window the user already opened.
 - A batch run counts as success only when a new log is newer than the process start and contains `Total elapsed time`.
 - The setup script registers the server as `ltspice-mcp`.
-- Workflow notes `run-and-measure` and `debug-convergence` are short routers. The steps live in optional skills under `data/skills/` and are not returned by `read_workflow_instruction`.
+- Workflow notes `run-and-measure` and `debug-convergence` are short routers. Optional skills under `data/skills/` contain the steps. `read_workflow_instruction` does not return the steps.
 
 ## 0.0.1
 
-- First LTspice MCP server: `.asc` editor, LTspice XVII batch runs, waveform and `.meas` reads.
-- Depends on `mcp-app-core`. `pip install` clones https://github.com/kh6570/HAbedini-mcp-app-core.
-- No DLL, Verilog, or socket devices. Symbols, hierarchical blocks, and behavioral sources are the mixed-signal surface.
-- Opening a schematic in the GUI is supported. A GUI command channel is not.
+- The first LTspice MCP server includes an `.asc` editor, LTspice XVII batch runs, waveform reads, and `.meas` reads.
+- The server depends on `mcp-app-core`. `pip install` clones https://github.com/kh6570/HAbedini-mcp-app-core.
+- The server has no DLL, Verilog, or socket devices. Symbols, hierarchical blocks, and behavioral sources are the mixed-signal surface.
+- The server lets the user open a schematic in the GUI. The server does not support a GUI command channel.

@@ -4,7 +4,7 @@ In the name of God, the Most Gracious, the Most Merciful
 
 ## What this server does
 
-`ltspice-mcp` lets an assistant edit `.asc` schematics, run LTspice, and read logs and waveforms. The schematic is the source of truth. `.net`, `.log`, and `.raw` are produced by LTspice.
+`ltspice-mcp` lets an assistant edit `.asc` schematics, run LTspice, and read logs and waveforms. The schematic is the source of truth. LTspice produces `.net`, `.log`, and `.raw`.
 
 Waveform tools return at most 2000 points. Ask for a plot, a CSV export, or a `.meas` result when the trace is larger.
 
@@ -14,18 +14,18 @@ Waveform tools return at most 2000 points. Ask for a plot, a CSV export, or a `.
 - Python 3.11 or newer
 - LTspice XVII (`XVIIx64.exe`) or a later install (`LTspice.exe`)
 
-This tree was checked against LTspice XVII 17.0.37 at `C:\Program Files\LTC\LTspiceXVII\XVIIx64.exe`.
+The project checked this tree against LTspice XVII 17.0.37 at `C:\Program Files\LTC\LTspiceXVII\XVIIx64.exe`.
 
 ## Install
 
-This server depends on `mcp-app-core`. `pip install` clones it from GitHub. You do not clone that repository yourself.
+This server depends on `mcp-app-core`. `pip install` clones it from GitHub. Do not clone that repository.
 
 ```powershell
 py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
 ```
 
-Or run `scripts\setup_mcp.ps1`, which installs the core, creates the venv, and merges an `ltspice-mcp` entry into the Cursor and VS Code user MCP configs. The name is `ltspice-mcp` so it does not collide with Analog's installer entry. It leaves any existing `qspice` server in place.
+Or run `scripts\setup_mcp.ps1`. The script installs the core. The script creates the venv. The script merges an `ltspice-mcp` entry into the Cursor and VS Code user MCP configs. The name is `ltspice-mcp`. This name prevents a conflict with the Analog installer entry. The script keeps each `qspice` server.
 
 ## Run
 
@@ -50,7 +50,7 @@ The server probes, in order: `LTSPICE_EXE`, `Program Files\LTC\LTspiceXVII\XVIIx
 
 A normal session omits remote, batch, live GUI, and topology ingest. Set `LTSPICE_ACTIVE_PROFILES=default,extended` to load them. `describe_server_capabilities` lists the hidden groups.
 
-Existing schematic edits need `expected_hash` from the previous read. LTspice XVII stays launch-only. On 26.1 or newer, `LTSPICE_WINDOW_SYNC=1` attaches a save to a schematic you already have open and pushes the new text as one undo step. It does not start a hidden LTspice.
+An edit of a schematic on disk needs `expected_hash` from the previous read. LTspice XVII stays launch-only. On 26.1 or newer, `LTSPICE_WINDOW_SYNC=1` attaches a save to a schematic you already have open and pushes the new text as one undo step. It does not start a hidden LTspice.
 
 ## Documentation
 
@@ -63,18 +63,18 @@ Existing schematic edits need `expected_hash` from the previous read. LTspice XV
 
 ## A simulation
 
-1. `create_starter_schematic` or `create_schematic` plus `add_component`.
-2. `prepare_transient` or another prepare tool. Directives are `!.tran` text on the schematic.
-3. `run_simulation`. An `.asc` is netlisted with `-netlist`, then the `.net` is run with `-b -ascii`.
-4. `read_measures` for `.meas` lines in the `.log`.
-5. `read_waveform` for a trace in the `.raw` file.
+1. Call `create_starter_schematic` or `create_schematic`. Call `add_component` after `create_schematic`.
+2. Call `prepare_transient` or another prepare tool. Directives are `!.tran` text on the schematic.
+3. Call `run_simulation`. The server netlists an `.asc` with `-netlist`. Then the server runs the `.net` with `-b -ascii`.
+4. Call `read_measures` for `.meas` lines in the `.log`.
+5. Call `read_waveform` for a trace in the `.raw` file.
 
 `-b` on an `.asc` opens the LTspice window and does not return, so the server never does that. `-ini` also hangs XVII 17.0.37, so batch runs use the normal user profile.
 
 ## What LTspice does not have
 
-- No C++ DLL, Verilog, or socket custom devices. Use a `.asy` symbol, a hierarchical block, or a behavioral source.
-- No GUI command channel. `open_schematic_in_gui` launches LTspice. Poll and command tools return `unsupported`.
+- LTspice has no C++ DLL, Verilog, or socket custom devices. Use a `.asy` symbol, a hierarchical block, or a behavioral source.
+- LTspice has no GUI command channel. `open_schematic_in_gui` launches LTspice. Poll and command tools return `unsupported`.
 
 ## Encoding
 

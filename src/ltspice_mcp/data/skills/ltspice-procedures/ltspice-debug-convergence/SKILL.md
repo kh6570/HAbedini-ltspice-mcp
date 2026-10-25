@@ -10,8 +10,7 @@ In the name of God, the Most Gracious, the Most Merciful
 
 # LTspice: Debug Convergence
 
-A convergence failure is a circuit or numeric problem. Read the log, then
-change one thing.
+A convergence failure is a circuit or numeric problem. Read the log. Then change one thing.
 
 ## When to use
 
@@ -20,8 +19,7 @@ matrix problem.
 
 ## When not to use
 
-Do not use this after a run that already finished, and do not use it to draw
-a new schematic. Open `ltspice-run-and-measure` for a measurement.
+Do not use this after a run that already finished. Do not use it to draw a new schematic. Open `ltspice-run-and-measure` for a measurement.
 
 ## Reference files
 

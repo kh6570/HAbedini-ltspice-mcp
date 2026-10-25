@@ -202,9 +202,9 @@ def _eval_node(node: ast.AST, env: dict[str, NDArray[np.complex128]]) -> NDArray
 def evaluate_expression(plot: RawPlot, expression: str) -> NDArray[np.complex128]:
     """Evaluate a small arithmetic expression over raw columns.
 
-    Names are signal names with parentheses removed, so ``V(out)`` is ``Vout``
-    is not required: the call syntax ``V(out)`` is rewritten to a lookup of the
-    raw column ``V(out)``.
+    The names are the signal names. You do not have to remove parentheses, so ``V(out)``
+    does not have to become ``Vout``. The function rewrites the syntax ``V(out)``
+    to a lookup of the raw column ``V(out)``.
     """
 
     rewritten = expression.strip()

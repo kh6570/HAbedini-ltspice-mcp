@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""State what mixed-signal authoring LTspice can and cannot do."""
+"""State the mixed-signal design tasks that LTspice can do. State the design tasks that LTspice cannot do."""
 
 from __future__ import annotations
 

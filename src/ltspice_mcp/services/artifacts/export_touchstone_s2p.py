@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Write a one-port-style S2P using S21 = output/reference and the other terms at 0."""
+"""Write a one-port-style S2P. Set S21 equal to output/reference. Set the other terms to 0."""
 
 from __future__ import annotations
 

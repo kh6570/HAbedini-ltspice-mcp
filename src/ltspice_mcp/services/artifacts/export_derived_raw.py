@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Write a small ASCII raw file containing one trace."""
+"""Write a small ASCII raw file that contains one trace."""
 
 from __future__ import annotations
 

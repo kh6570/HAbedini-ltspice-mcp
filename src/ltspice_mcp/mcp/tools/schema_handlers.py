@@ -14,7 +14,7 @@ ToolHandler = Callable[..., dict[str, object]]
 
 
 def expose_tool_schema(handler: ToolHandler, tool: ToolDefinition) -> ToolHandler:
-    """Give a handler the keyword signature advertised by its JSON schema."""
+    """Give a handler the keyword signature that its JSON schema advertises."""
 
     schema = tool.input_schema
     properties = schema.get("properties", {})

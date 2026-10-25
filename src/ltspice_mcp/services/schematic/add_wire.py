@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Add a wire. Exposed as ``add_wire`` by the tool module."""
+"""Add a wire. The tool module exposes this operation as ``add_wire``."""
 
 from __future__ import annotations
 

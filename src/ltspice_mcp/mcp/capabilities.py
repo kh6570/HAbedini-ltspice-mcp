@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Capability report returned by describe_server_capabilities."""
+"""The capability report that describe_server_capabilities returns."""
 
 from __future__ import annotations
 

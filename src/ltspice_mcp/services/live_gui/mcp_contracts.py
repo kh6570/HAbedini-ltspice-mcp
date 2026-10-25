@@ -29,7 +29,7 @@ MCP_CONTRACTS: dict[str, dict[str, object]] = {
     },
     "poll_live_gui_session": {
         "title": "Poll Live Gui Session",
-        "description": "Report that polling a GUI session is unsupported.",
+        "description": "Report that the server does not support a poll of a GUI session.",
         "input_schema": {
             "type": "object",
             "properties": {"schematic_path": {"type": "string"}},
@@ -38,7 +38,7 @@ MCP_CONTRACTS: dict[str, dict[str, object]] = {
     },
     "poll_live_gui_session_events": {
         "title": "Poll Live Gui Session Events",
-        "description": "Report that GUI events are unsupported.",
+        "description": "Report that the server does not support GUI events.",
         "input_schema": {
             "type": "object",
             "properties": {"schematic_path": {"type": "string"}},
@@ -56,7 +56,7 @@ MCP_CONTRACTS: dict[str, dict[str, object]] = {
     },
     "send_live_gui_session_command": {
         "title": "Send Live Gui Session Command",
-        "description": "Report that GUI commands are unsupported.",
+        "description": "Report that the server does not support GUI commands.",
         "input_schema": {
             "type": "object",
             "properties": {"schematic_path": {"type": "string"}, "command": {"type": "string"}},

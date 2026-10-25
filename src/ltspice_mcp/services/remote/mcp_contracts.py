@@ -6,7 +6,7 @@ from __future__ import annotations
 MCP_CONTRACTS: dict[str, dict[str, object]] = {
     "close_remote_session": {
         "title": "Close Remote Session",
-        "description": "Drop a session from memory. Files on disk are left in place.",
+        "description": "Drop a session from memory. The files stay in place on the disk.",
         "input_schema": {
             "type": "object",
             "properties": {"session_id": {"type": "string"}},

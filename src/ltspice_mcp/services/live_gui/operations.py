@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Launch the LTspice GUI. Window sync uses the 26.1 bridge when it is enabled."""
+"""Launch the LTspice GUI. Window sync uses the 26.1 bridge after you enable that bridge."""
 
 from __future__ import annotations
 
@@ -116,14 +116,14 @@ def refresh_schematic_in_gui(
 
 
 def poll_live_gui_session(*, workspace_root: Path, schematic_path: str) -> dict[str, object]:
-    """Report that polling a GUI session is unsupported."""
+    """Report that the server does not support a poll of a GUI session."""
 
     del workspace_root, schematic_path
     return _unsupported("poll_live_gui_session")
 
 
 def poll_live_gui_session_events(*, workspace_root: Path, schematic_path: str) -> dict[str, object]:
-    """Report that GUI events are unsupported."""
+    """Report that the server does not support GUI events."""
 
     del workspace_root, schematic_path
     return _unsupported("poll_live_gui_session_events")
@@ -132,7 +132,7 @@ def poll_live_gui_session_events(*, workspace_root: Path, schematic_path: str) -
 def send_live_gui_session_command(
     *, workspace_root: Path, schematic_path: str, command: str
 ) -> dict[str, object]:
-    """Report that GUI commands are unsupported."""
+    """Report that the server does not support GUI commands."""
 
     del workspace_root, schematic_path, command
     return _unsupported("send_live_gui_session_command")

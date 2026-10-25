@@ -1,9 +1,9 @@
 # In the name of God, the Most Gracious, the Most Merciful
 """Pin geometry and net connectivity for LTspice symbols.
 
-Pin offsets are the coordinates published in the standard LTspice symbol files
-(``res.asy``, ``cap.asy``, and the other primitive cells). Orientation follows
-LTspice's rule: rotate clockwise first, then mirror horizontally for ``M*``.
+The standard LTspice symbol files publish the pin offsets.
+The files include ``res.asy``, ``cap.asy``, and the other primitive cells.
+Orientation follows LTspice's rule: rotate clockwise first, then mirror horizontally for ``M*``.
 """
 
 from __future__ import annotations
@@ -18,7 +18,8 @@ if TYPE_CHECKING:
 
 _GRID = 16
 
-# kind -> (symbol name, spice prefix, ((x, y, pin name, spice order), ...))
+# A kind value maps to a symbol name, a SPICE prefix, and the pin tuples.
+# Each pin tuple contains x, y, the pin name, and the SPICE order.
 _PRIMITIVES: dict[str, tuple[str, str, tuple[tuple[int, int, str, int], ...]]] = {
     "resistor": ("res", "R", ((16, 16, "A", 1), (16, 96, "B", 2))),
     "capacitor": ("cap", "C", ((16, 0, "A", 1), (16, 64, "B", 2))),
@@ -81,7 +82,7 @@ def canonical_kind(kind: str) -> str:
 
 
 def symbol_name_for(kind: str) -> str:
-    """Return the ``.asy`` name placed by a primitive kind."""
+    """Return the ``.asy`` name that a primitive kind places."""
 
     resolved = canonical_kind(kind)
     if resolved == "ground":
@@ -96,14 +97,6 @@ def prefix_for(kind: str) -> str:
     if resolved == "ground":
         return ""
     return _PRIMITIVES[resolved][1]
-
-
-def spice_letter(prefix: str) -> str:
-    """Return the netlist element letter. ``MN`` and ``QN`` keep only the first character."""
-
-    if len(prefix) >= 2 and prefix[1] in {"N", "P"}:
-        return prefix[0]
-    return prefix[:1] or "X"
 
 
 def _rotate(x: int, y: int, rotation: str) -> tuple[int, int]:

@@ -1,7 +1,7 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Original starter schematics used by recipes and layout specs.
+"""Recipes and layout specs use these original starter schematics.
 
-These circuits are authored for this project. They are not Analog Devices examples.
+This project authors these circuits. They are not Analog Devices examples.
 """
 
 from __future__ import annotations
@@ -47,7 +47,7 @@ def build_divider(version: str = "Version 4") -> Schematic:
 
 
 def build_rc(version: str = "Version 4") -> Schematic:
-    """Series R and shunt C driven by a pulse, a first-order low-pass."""
+    """A pulse drives a series R and a shunt C. The circuit is a first-order low-pass."""
 
     schematic = _base(version)
     add_primitive(
@@ -77,7 +77,7 @@ def build_rc(version: str = "Version 4") -> Schematic:
 
 
 def build_buck(version: str = "Version 4") -> Schematic:
-    """Open-loop buck power stage switched by a pulsed voltage and a diode."""
+    """A pulsed voltage and a diode switch an open-loop buck power stage."""
 
     schematic = _base(version)
     schematic.width = 1200

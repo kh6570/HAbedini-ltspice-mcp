@@ -14,7 +14,7 @@ _RUNS: dict[str, subprocess.Popen[str]] = {}
 
 
 def register_run(key: str, process: subprocess.Popen[str]) -> None:
-    """Remember a running simulation."""
+    """Remember a simulation that is in progress."""
 
     with _LOCK:
         _RUNS[key] = process
@@ -28,7 +28,7 @@ def pop_run(key: str) -> subprocess.Popen[str] | None:
 
 
 def cancel_run(key: str) -> subprocess.Popen[str] | None:
-    """Return the process for ``key`` without forgetting it until the caller stops it."""
+    """Return the process for ``key``. Keep the record until the caller stops the process."""
 
     with _LOCK:
         return _RUNS.get(key)

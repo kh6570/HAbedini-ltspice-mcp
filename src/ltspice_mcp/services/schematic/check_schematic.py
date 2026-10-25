@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Report structural problems without running LTspice."""
+"""Report structural problems. Do not start LTspice."""
 
 from __future__ import annotations
 

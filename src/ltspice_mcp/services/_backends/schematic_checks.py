@@ -182,7 +182,7 @@ def netlist_findings(text: str) -> tuple[CheckFinding, ...]:
 
 
 def check_payload(findings: tuple[CheckFinding, ...]) -> dict[str, object]:
-    """Return the JSON check result, including location and fixable."""
+    """Return the JSON check result. The result contains location and fixable."""
 
     return CheckResult(findings=findings, output_schema=CHECK_OUTPUT_SCHEMA).as_dict()
 

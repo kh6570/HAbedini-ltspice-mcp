@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 
 
 def describe_mixed_signal_support(*, workspace_root: Path) -> dict[str, object]:
-    """State what mixed-signal authoring LTspice can and cannot do."""
+    """State the mixed-signal design tasks that LTspice can do. State the design tasks that LTspice cannot do."""
 
     del workspace_root
     return {
@@ -45,7 +45,7 @@ def describe_mixed_signal_support(*, workspace_root: Path) -> dict[str, object]:
 
 
 def describe_protocol_support(*, workspace_root: Path) -> dict[str, object]:
-    """State that I2C and SPI scaffolds here are behavioral teaching circuits."""
+    """State that the I2C and SPI scaffolds here are behavioral circuits for instruction."""
 
     del workspace_root
     return {

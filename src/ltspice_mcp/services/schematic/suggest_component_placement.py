@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Suggest the next free grid point to the right of existing parts."""
+"""Suggest the next free grid point to the right of the parts on the schematic."""
 
 from __future__ import annotations
 

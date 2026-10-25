@@ -32,7 +32,7 @@ class LTspiceToolRuntime:
             self._handlers[tool.name] = expose_tool_schema(build_handler(self, tool), tool)
 
     def get_handler(self, name: str) -> Callable[..., object]:
-        """Return one handler, threaded when the tool is long-running."""
+        """Return one handler. Use a thread when the tool takes a long time."""
 
         handler = self._handlers[name]
         tool = next(item for item in self.tools if item.name == name)

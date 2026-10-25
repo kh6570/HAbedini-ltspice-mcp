@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Remove a directive or comment containing ``text``."""
+"""Remove a directive or a comment that contains ``text``."""
 
 from __future__ import annotations
 

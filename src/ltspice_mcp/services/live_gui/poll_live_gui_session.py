@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Report that polling a GUI session is unsupported."""
+"""Report that the server does not support a poll of a GUI session."""
 
 from __future__ import annotations
 

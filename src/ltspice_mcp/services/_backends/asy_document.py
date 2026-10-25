@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from ltspice_mcp.core.exceptions import ParseError, ValidationError
-from ltspice_mcp.services._backends.asc_document import SCHEMATIC_ENCODING, read_text, write_text
+from ltspice_mcp.services._backends.asc_document import read_text, write_text
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -159,14 +159,8 @@ def two_pin_box(*, prefix: str, value: str, description: str) -> AsySymbol:
     return symbol
 
 
-def encoding_name() -> str:
-    """Return the on-disk encoding name."""
-
-    return SCHEMATIC_ENCODING
-
-
 def require_index(symbol: AsySymbol, index: int) -> None:
-    """Raise when a drawing index is outside the graphic list."""
+    """Raise an error when the index is outside the graphic list."""
 
     if index < 0 or index >= len(symbol.graphics):
         raise ValidationError(f"Drawing index {index} is outside 0..{len(symbol.graphics) - 1}.")

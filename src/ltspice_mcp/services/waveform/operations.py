@@ -24,7 +24,6 @@ from ltspice_mcp.services._backends.log_parse import (
     parse_steps,
     read_log_text,
 )
-from ltspice_mcp.services._backends.raw_file import load_raw
 from ltspice_mcp.services._backends.waveform_math import (
     bode,
     column_complex,
@@ -306,10 +305,3 @@ def summarize_device_operating_points(*, workspace_root: Path, log_path: str) ->
         unit = str(row["unit"])
         units[unit] = units.get(unit, 0) + 1
     return {"count": len(rows), "units": units}
-
-
-def raw_flags(*, workspace_root: Path, raw_path: str) -> dict[str, object]:
-    """Return plot metadata for export tools."""
-
-    raw = load_raw(_raw(workspace_root, raw_path))
-    return {"plots": [plot.plotname for plot in raw.plots]}

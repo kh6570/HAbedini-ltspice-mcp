@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Domain exceptions. All user-facing errors derive from LTspiceError."""
+"""Domain exceptions. All errors that a user sees derive from LTspiceError."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ class BackendUnavailableError(LTspiceError):
 
 
 class ArtifactMissingError(LTspiceError):
-    """A requested or expected artifact could not be found or was not created."""
+    """The caller requested an artifact or expected an artifact. The server did not find that artifact or did not create it."""
 
     default_error_code = "artifact_missing"
 
@@ -105,7 +105,7 @@ class SchematicInvalidError(ParseError):
 
 
 class BudgetExceededError(LTspiceError):
-    """A DataBudget was exceeded and no downsampling strategy could satisfy it."""
+    """The call exceeded a DataBudget. No downsample strategy could satisfy the budget."""
 
     default_error_code = "budget_exceeded"
 
@@ -129,7 +129,7 @@ class UnsupportedManifestVersionError(ValidationError):
 
 
 class ConfigurationError(LTspiceError):
-    """Runtime configuration is missing or invalid."""
+    """The runtime configuration is absent, or the configuration is invalid."""
 
     default_error_code = "configuration_invalid"
 

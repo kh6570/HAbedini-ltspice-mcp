@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Report that GUI events are unsupported."""
+"""Report that the server does not support GUI events."""
 
 from __future__ import annotations
 

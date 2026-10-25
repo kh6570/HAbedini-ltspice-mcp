@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Insert a ``.meas`` directive without replacing other measurements."""
+"""Insert a ``.meas`` directive. Do not replace the other measurements."""
 
 from __future__ import annotations
 

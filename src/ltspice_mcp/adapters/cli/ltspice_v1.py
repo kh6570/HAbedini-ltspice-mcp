@@ -1,7 +1,8 @@
 # In the name of God, the Most Gracious, the Most Merciful
 """LTspice XVII / 24 command-line adapter.
 
-Documented switches used here are ``-b`` (batch), ``-ascii`` (text raw files),
+This adapter uses these documented switches.
+The switches are ``-b`` (batch), ``-ascii`` (text raw files),
 ``-netlist`` (schematic to netlist), and ``-ini`` (private preferences file).
 The schematic or netlist path is the final argument. The process working
 directory is the file's parent so ``.log``, ``.raw``, and ``.net`` land beside it.
@@ -83,9 +84,9 @@ def build_batch_command(
 ) -> SimulationCommand:
     """Build ``LTspice -b [-ascii] <netlist>``.
 
-    XVII 17.0.37 hangs when ``-ini`` is passed, so batch runs use the normal
-    user profile. Pass a ``.net`` or ``.cir`` file. An ``.asc`` is netlisted
-    first; ``-b`` on a schematic opens the GUI and does not return.
+    XVII 17.0.37 hangs when you pass ``-ini``. Batch runs use the normal
+    user profile. Pass a ``.net`` or ``.cir`` file. The adapter netlists an ``.asc``
+    first. ``-b`` on a schematic opens the GUI and does not return.
     """
 
     _reject_reserved_switches(extra_switches)

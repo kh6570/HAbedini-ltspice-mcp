@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Contracts for tools that are not discovered from a service package."""
+"""These contracts describe tools that a service package does not discover."""
 
 from __future__ import annotations
 

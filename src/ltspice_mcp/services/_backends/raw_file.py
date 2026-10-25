@@ -1,11 +1,11 @@
 # In the name of God, the Most Gracious, the Most Merciful
 """Clean-room reader for LTspice ``.raw`` files.
 
-ASCII (``Values:``) and uncompressed binary (``Binary:``) plots are read directly.
-The default GUI file is LTspice's compressed binary. That encoding stores the
-first sample in full (time as float64, other traces as float32) and later
-samples as deltas. The delta width is selected by the first byte, using the
-layout checked against XVII 17.0.37 batch output.
+The reader reads ASCII (``Values:``) plots and uncompressed binary (``Binary:``) plots directly.
+The default GUI file is the LTspice compressed binary. That format stores the
+first sample in full. Time is float64. The other traces are float32. Later
+samples are deltas. The first byte selects the delta width. The layout matches
+XVII 17.0.37 batch output.
 """
 
 from __future__ import annotations
@@ -216,11 +216,11 @@ def _read_uncompressed(
 def _read_delta(payload: bytes, offset: int, previous: float) -> tuple[int, float]:
     """Read one LTspice compressed delta and return the new offset and value.
 
-    The first byte selects the width. A leading zero nibble means the rest of
-    that byte, sign-extended, is a 16-bit-scaled delta. ``0xFF`` introduces a
+    The first byte selects the width. A zero nibble at the start means that the rest of
+    that byte is a 16-bit-scaled delta after sign extension. ``0xFF`` introduces a
     full-precision absolute sample. Other values are little-endian integer
-    deltas whose width is ``1 + (first_byte >> 6)`` when the top bits are set,
-    which matches XVII compressed batch files.
+    deltas. When the top bits are 1, the width is ``1 + (first_byte >> 6)``.
+    That width matches XVII compressed batch files.
     """
 
     if offset >= len(payload):
@@ -290,7 +290,7 @@ def _build_plot(
 
 
 def parse_raw_bytes(data: bytes) -> RawFile:
-    """Parse one raw file already loaded into memory."""
+    """Parse one raw file that is already in memory."""
 
     header, payload, mode = _split_header(data)
     meta, variables = _header_map(header)

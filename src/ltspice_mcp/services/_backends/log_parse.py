@@ -102,7 +102,7 @@ def parse_steps(text: str) -> list[str]:
 
 
 def parse_fourier(text: str) -> dict[str, object]:
-    """Return the Fourier section, including total harmonic distortion when present."""
+    """Return the Fourier section. Include the total harmonic distortion when the log has it."""
 
     thd = [float(match.group(1)) for match in _FOURIER_THD.finditer(text)]
     lines = [line for line in text.splitlines() if "Fourier" in line or "Harmonic" in line]

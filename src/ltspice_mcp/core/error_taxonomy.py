@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from typing import Literal
 
 DEFAULT_ERROR_CODE = "ltspice_error"
-ERRORS_DOCUMENT_PATH = "docs/errors.md"
 
 ErrorCodeStatus = Literal["implemented", "reserved"]
 
@@ -23,7 +22,7 @@ class ErrorCodeDefinition:
     mapped_exceptions: tuple[str, ...] = ()
 
     def summary_dict(self) -> dict[str, object]:
-        """Return a JSON-serializable summary for capability reporting."""
+        """Return a JSON-serializable summary for the capability report."""
 
         return {
             "code": self.code,

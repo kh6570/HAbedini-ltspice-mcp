@@ -1,7 +1,7 @@
 # In the name of God, the Most Gracious, the Most Merciful
 description: >
   Optional procedure skills for a measurement and for a convergence failure.
-  Not part of the default install, and not loaded by the MCP server.
+  These skills are not part of the default install. The MCP server does not load these skills.
 keywords:
   - ltspice
   - measurement

@@ -11,6 +11,6 @@ requires-skills:
   - ltspice-getting-started
 requires-products: []
 toolkit: ltspice-mcp
-when-not-to-use: Do not use this for a successful run that already finished, and do not use it to author a new schematic. Use ltspice-run-and-measure to take a measurement.
+when-not-to-use: Do not use this for a successful run that already finished. Do not use it to author a new schematic. Use ltspice-run-and-measure to take a measurement.
 reference-files:
   - workflow.md

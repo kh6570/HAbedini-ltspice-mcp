@@ -124,7 +124,7 @@ MCP_CONTRACTS: dict[str, dict[str, object]] = {
     },
     "prepare_loop_gain_analysis": {
         "title": "Prepare Loop Gain Analysis",
-        "description": "Stage an AC loop-gain run using the extra-source method.",
+        "description": "Stage an AC loop-gain run. Use the extra-source method.",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -138,7 +138,7 @@ MCP_CONTRACTS: dict[str, dict[str, object]] = {
     },
     "prepare_meas": {
         "title": "Prepare Meas",
-        "description": "Insert a ``.meas`` directive without replacing other measurements.",
+        "description": "Insert a ``.meas`` directive. Do not replace the other measurements.",
         "input_schema": {
             "type": "object",
             "properties": {"schematic_path": {"type": "string"}, "statement": {"type": "string"}},

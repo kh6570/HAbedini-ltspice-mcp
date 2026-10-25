@@ -23,7 +23,7 @@ MCP_CONTRACTS: dict[str, dict[str, object]] = {
     },
     "add_component_from_asy": {
         "title": "Add Component From Asy",
-        "description": "Place a symbol using the file name of an ``.asy`` in the workspace.",
+        "description": "Place a symbol. Use the file name of an ``.asy`` in the workspace.",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -111,7 +111,7 @@ MCP_CONTRACTS: dict[str, dict[str, object]] = {
     },
     "add_wire": {
         "title": "Add Wire",
-        "description": "Add a wire. Exposed as ``add_wire`` by the tool module.",
+        "description": "Add a wire. The tool module exposes this operation as ``add_wire``.",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -144,7 +144,7 @@ MCP_CONTRACTS: dict[str, dict[str, object]] = {
     },
     "check_schematic": {
         "title": "Check Schematic",
-        "description": "Report structural problems without running LTspice.",
+        "description": "Report structural problems. Do not start LTspice.",
         "input_schema": {
             "type": "object",
             "properties": {"schematic_path": {"type": "string"}},
@@ -296,7 +296,7 @@ MCP_CONTRACTS: dict[str, dict[str, object]] = {
     },
     "remove_component_symbol_drawing": {
         "title": "Remove Component Symbol Drawing",
-        "description": "Remove one symbol drawing by index.",
+        "description": "Remove one symbol graphic by index.",
         "input_schema": {
             "type": "object",
             "properties": {"asy_path": {"type": "string"}, "index": {"type": "integer"}},
@@ -305,7 +305,7 @@ MCP_CONTRACTS: dict[str, dict[str, object]] = {
     },
     "remove_instruction": {
         "title": "Remove Instruction",
-        "description": "Remove a directive or comment containing ``text``.",
+        "description": "Remove a directive or a comment that contains ``text``.",
         "input_schema": {
             "type": "object",
             "properties": {"schematic_path": {"type": "string"}, "text": {"type": "string"}},
@@ -486,7 +486,7 @@ MCP_CONTRACTS: dict[str, dict[str, object]] = {
     },
     "suggest_component_placement": {
         "title": "Suggest Component Placement",
-        "description": "Suggest the next free grid point to the right of existing parts.",
+        "description": "Suggest the next free grid point to the right of the parts on the schematic.",
         "input_schema": {
             "type": "object",
             "properties": {"schematic_path": {"type": "string"}, "kind": {"type": "string"}},

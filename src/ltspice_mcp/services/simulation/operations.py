@@ -317,7 +317,7 @@ def prepare_four(
 
 
 def prepare_meas(*, workspace_root: Path, schematic_path: str, statement: str) -> dict[str, object]:
-    """Insert a ``.meas`` directive without replacing other measurements."""
+    """Insert a ``.meas`` directive. Do not replace the other measurements."""
 
     body = statement.strip()
     if not body.lower().startswith(".meas"):
@@ -640,7 +640,7 @@ def prepare_loop_gain_analysis(
     f_start: str = "10",
     f_end: str = "1Meg",
 ) -> dict[str, object]:
-    """Stage an AC loop-gain run using the extra-source method.
+    """Stage an AC loop-gain run. Use the extra-source method.
 
     The injection source, when named, receives ``AC 1``. Place that source in the
     feedback loop. Gain is ``V(out)/V(err)`` once those nets exist.

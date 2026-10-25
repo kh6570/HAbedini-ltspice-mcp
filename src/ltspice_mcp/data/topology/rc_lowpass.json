@@ -1,6 +1,6 @@
 {
   "id": "rc_lowpass",
   "title": "RC low-pass",
-  "summary": "First-order low-pass formed by a series resistor and a shunt capacitor.",
+  "summary": "A series resistor and a shunt capacitor form a first-order low-pass.",
   "equations": ["f_3db = 1 / (2 * pi * R * C)"]
 }

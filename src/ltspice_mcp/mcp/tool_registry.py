@@ -101,7 +101,7 @@ def build_runtime_tool_registry(
     *,
     active_profiles: Collection[str] | None = _DEFAULT_PROFILES,
 ) -> tuple[CoreToolDefinition, ...]:
-    """Return tools whose services are implemented."""
+    """Return tools when the server implements their services."""
 
     definitions = (
         tool_definitions

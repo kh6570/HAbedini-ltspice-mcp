@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Return two traces side by side without writing a combined raw file."""
+"""Return two traces side by side. Do not write a combined raw file."""
 
 from __future__ import annotations
 

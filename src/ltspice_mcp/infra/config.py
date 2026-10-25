@@ -13,7 +13,7 @@ from pydantic_settings import SettingsConfigDict
 
 
 class LTspiceFeatures(BaseModel):
-    """Feature toggles exposed by the server definition."""
+    """Feature toggles that the server definition exposes."""
 
     schematic_inspection: bool = True
     waveform_parsing: bool = True
@@ -21,7 +21,7 @@ class LTspiceFeatures(BaseModel):
 
 
 class LTspiceSettings(AppSettings):
-    """Application settings loaded from the environment and CLI overrides."""
+    """The application settings. The environment and the CLI overrides load these settings."""
 
     session_mode: Literal["cold", "auto"] = "cold"
     recipe_path: Path | None = None
@@ -59,7 +59,7 @@ class LTspiceSettings(AppSettings):
         )
 
     def active_profile_names(self) -> tuple[str, ...]:
-        """Return the profiles a normal or extended session should load."""
+        """Return the profiles that a normal session or an extended session has to load."""
 
         names = tuple(part.strip() for part in self.active_profiles.split(",") if part.strip())
         if not names:
@@ -94,7 +94,7 @@ class LTspiceSettings(AppSettings):
         active_profiles: str | None = None,
         window_sync: bool | None = None,
     ) -> Self:
-        """Apply explicit CLI overrides on top of environment-loaded settings."""
+        """Apply explicit CLI overrides on top of the settings that the environment loads."""
 
         updates: dict[str, object] = {}
         if transport is not None:

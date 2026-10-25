@@ -3,7 +3,7 @@ schema_version: 1
 license: MIT
 scope: cross-product
 version: "1.0"
-human-description: Run an LTspice schematic and read a bounded measurement from the log or waveform.
+human-description: Run an LTspice schematic. Read a bounded measurement from the log or waveform.
 requires-tools:
   - prepare_transient
   - run_simulation

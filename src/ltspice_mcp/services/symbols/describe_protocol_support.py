@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""State that I2C and SPI scaffolds here are behavioral teaching circuits."""
+"""State that the I2C and SPI scaffolds here are behavioral circuits for instruction."""
 
 from __future__ import annotations
 

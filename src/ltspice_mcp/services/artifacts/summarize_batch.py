@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Summarize raw files sitting in a batch directory."""
+"""Summarize the raw files in a batch directory."""
 
 from __future__ import annotations
 

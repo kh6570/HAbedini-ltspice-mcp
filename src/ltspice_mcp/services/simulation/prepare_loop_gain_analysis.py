@@ -1,5 +1,5 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Stage an AC loop-gain run using the extra-source method."""
+"""Stage an AC loop-gain run. Use the extra-source method."""
 
 from __future__ import annotations
 

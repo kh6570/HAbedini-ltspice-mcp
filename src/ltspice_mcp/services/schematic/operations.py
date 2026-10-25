@@ -18,13 +18,8 @@ from mcp_app_core.images import ImageResult
 from ltspice_mcp.adapters.probe import probe_ltspice, schematic_version_line
 from ltspice_mcp.core.exceptions import ValidationError
 from ltspice_mcp.services._backends.asc_document import (
-    Flag,
-    Graphic,
-    IoPin,
     Schematic,
-    Symbol,
     TextItem,
-    Wire,
     load_schematic,
 )
 from ltspice_mcp.services._backends.asc_edit import (
@@ -54,7 +49,6 @@ from ltspice_mcp.services._backends.asy_document import (
     save_asy,
     two_pin_box,
 )
-from ltspice_mcp.services._backends.netlist_clean import render_clean_room_netlist
 from ltspice_mcp.services._backends.schematic_checks import (
     check_payload,
     netlist_findings,
@@ -239,7 +233,7 @@ def add_wire_service(
     x2: int,
     y2: int,
 ) -> dict[str, object]:
-    """Add a wire. Exposed as ``add_wire`` by the tool module."""
+    """Add a wire. The tool module exposes this operation as ``add_wire``."""
 
     path, schematic, previous = _load(workspace_root, schematic_path)
     result = add_wire(schematic, x1=x1, y1=y1, x2=x2, y2=y2)
@@ -335,7 +329,7 @@ def add_instruction(
 def remove_instruction(
     *, workspace_root: Path, schematic_path: str, text: str
 ) -> dict[str, object]:
-    """Remove a directive or comment containing ``text``."""
+    """Remove a directive or a comment that contains ``text``."""
 
     path, schematic, previous = _load(workspace_root, schematic_path)
     result = remove_directive(schematic, text)
@@ -438,7 +432,7 @@ def remove_component_service(
 def suggest_component_placement(
     *, workspace_root: Path, schematic_path: str, kind: str
 ) -> dict[str, object]:
-    """Suggest the next free grid point to the right of existing parts."""
+    """Suggest the next free grid point to the right of the parts on the schematic."""
 
     _path, schematic, _previous = _load(workspace_root, schematic_path)
     xs = [symbol.x for symbol in schematic.symbols()] or [0]
@@ -515,7 +509,7 @@ def read_net_connectivity(*, workspace_root: Path, schematic_path: str) -> dict[
 
 
 def check_schematic(*, workspace_root: Path, schematic_path: str) -> dict[str, object]:
-    """Report structural problems without running LTspice."""
+    """Report structural problems. Do not start LTspice."""
 
     path, schematic, _previous = _load(workspace_root, schematic_path)
     result = check_payload(schematic_findings(schematic))
@@ -684,7 +678,7 @@ def add_component_from_asy(
     y: int = 0,
     rotation: str = "R0",
 ) -> dict[str, object]:
-    """Place a symbol using the file name of an ``.asy`` in the workspace."""
+    """Place a symbol. Use the file name of an ``.asy`` in the workspace."""
 
     asy = validate_existing_file(asy_path, workspace_root=workspace_root, suffixes=(".asy",))
     loaded = load_asy(asy)
@@ -756,7 +750,7 @@ def add_component_symbol_drawing(
 def remove_component_symbol_drawing(
     *, workspace_root: Path, asy_path: str, index: int
 ) -> dict[str, object]:
-    """Remove one symbol drawing by index."""
+    """Remove one symbol graphic by index."""
 
     path = validate_existing_file(asy_path, workspace_root=workspace_root, suffixes=(".asy",))
     symbol = load_asy(path)
@@ -860,28 +854,3 @@ def materialize_reference_circuit(
         kind=recipe_id,
         settings=settings,
     )
-
-
-def clean_netlist_text(*, workspace_root: Path, schematic_path: str) -> str:
-    """Return the clean-room netlist text."""
-
-    _path, schematic, _previous = _load(workspace_root, schematic_path)
-    return render_clean_room_netlist(schematic)
-
-
-def directive_commands(schematic: Schematic) -> list[str]:
-    """Return active directive bodies."""
-
-    return [item.body() for item in schematic.texts() if item.is_directive]
-
-
-def count_records(schematic: Schematic) -> dict[str, int]:
-    """Count record kinds. Useful for tests."""
-
-    return {
-        "wires": sum(isinstance(item, Wire) for item in schematic.records),
-        "flags": sum(isinstance(item, Flag) for item in schematic.records),
-        "symbols": sum(isinstance(item, Symbol) for item in schematic.records),
-        "graphics": sum(isinstance(item, Graphic) for item in schematic.records),
-        "iopins": sum(isinstance(item, IoPin) for item in schematic.records),
-    }

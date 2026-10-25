@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 from mcp_app_core.paths import resolve_output_path as _resolve_output_path
 from mcp_app_core.paths import resolve_workspace_path as _resolve_workspace_path
 from mcp_app_core.paths import validate_existing_file as _validate_existing_file
-from mcp_app_core.paths import validate_time_window as _validate_time_window
 
 from ltspice_mcp.core.exceptions import (
     ArtifactMissingError,
@@ -34,7 +33,7 @@ def validate_existing_file(
     workspace_root: Path,
     suffixes: tuple[str, ...] = (),
 ) -> Path:
-    """Resolve and validate an existing file within the workspace root."""
+    """Resolve and validate a file that is already in the workspace root."""
 
     return _validate_existing_file(
         raw_path,
@@ -65,12 +64,3 @@ def resolve_output_path(
     )
     resolved.parent.mkdir(parents=True, exist_ok=True)
     return resolved
-
-
-def validate_time_window(
-    t_start: float | None,
-    t_end: float | None,
-) -> tuple[float | None, float | None]:
-    """Validate an optional waveform time window."""
-
-    return _validate_time_window(t_start, t_end, validation_error=ValidationError)

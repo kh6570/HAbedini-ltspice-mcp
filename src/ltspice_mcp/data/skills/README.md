@@ -7,6 +7,6 @@ Skills are client-side routers. The MCP server does not load them. `read_workflo
 | Group | Install | Skills |
 | --- | --- | --- |
 | `ltspice-core` | default orientation | `ltspice-getting-started` |
-| `ltspice-procedures` | optional, not auto-loaded | `ltspice-run-and-measure`, `ltspice-debug-convergence` |
+| `ltspice-procedures` | optional, does not load automatically | `ltspice-run-and-measure`, `ltspice-debug-convergence` |
 
 Copy a skill directory into the agent skills folder only when that task needs it. There is no installer, and the server never reads `reference/*.md` on its own.

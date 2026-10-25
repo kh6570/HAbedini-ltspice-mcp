@@ -1,8 +1,8 @@
 # In the name of God, the Most Gracious, the Most Merciful
-"""Capability probing for the LTspice executable.
+"""This module probes the capability of the LTspice executable.
 
 Version detection uses the Windows PE file-version resource. LTspice has no
-documented ``--version`` switch, and launching the GUI during startup is avoided.
+documented ``--version`` switch. The probe does not launch the GUI during startup.
 """
 
 from __future__ import annotations
@@ -58,7 +58,7 @@ class ProbeResult:
 
 
 def default_install_locations() -> tuple[Path, ...]:
-    """Return the default Windows install locations worth probing."""
+    """Return the default Windows install locations that the probe checks."""
 
     program_files = Path(os.environ.get("PROGRAMFILES", r"C:\Program Files"))
     local_app = Path(os.environ.get("LOCALAPPDATA", str(Path.home() / "AppData" / "Local")))
@@ -139,7 +139,7 @@ def schematic_version_line(exe_version: str | None) -> str:
     """Return the ``Version`` header to write for this LTspice generation.
 
     LTspice XVII reads and writes ``Version 4``. LTspice 24 writes ``Version 4.1``.
-    Both are accepted on read.
+    A read accepts both.
     """
 
     if exe_version is None:
@@ -188,7 +188,7 @@ def library_root(executable: Path | None) -> Path | None:
 
 
 def probe_ltspice(settings: LTspiceSettings) -> ProbeResult:
-    """Discover the LTspice executable described by settings."""
+    """Discover the LTspice executable that the settings describe."""
 
     executable, source = discover_executable(settings.exe)
     if executable is None:
@@ -224,6 +224,6 @@ def probe_ltspice(settings: LTspiceSettings) -> ProbeResult:
 
 
 def build_summary(settings: LTspiceSettings) -> dict[str, object]:
-    """Return the probe summary used by ``--setup``."""
+    """Return the probe summary that ``--setup`` uses."""
 
     return probe_ltspice(settings).summary()

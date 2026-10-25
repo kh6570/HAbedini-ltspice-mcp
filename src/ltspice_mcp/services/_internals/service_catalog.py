@@ -46,12 +46,6 @@ EXTENDED_GROUP_PACKAGES = {
 }
 
 
-def discover_package_mcp_contracts(package_name: str) -> dict[str, dict[str, object]]:
-    """Return MCP contract rows declared under one service package."""
-
-    return _load_contracts(f"ltspice_mcp.services.{package_name}")
-
-
 @cache
 def build_mcp_contract_catalog() -> dict[str, dict[str, object]]:
     """Build the full MCP contract catalog."""

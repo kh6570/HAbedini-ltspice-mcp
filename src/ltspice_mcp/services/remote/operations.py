@@ -127,7 +127,7 @@ def close_remote_session(
     session_id: str,
     settings: LTspiceSettings | None = None,
 ) -> dict[str, object]:
-    """Drop a session from memory. Files on disk are left in place."""
+    """Drop a session from memory. The files stay in place on the disk."""
 
     del workspace_root, settings
     with _LOCK:

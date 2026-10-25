@@ -2,13 +2,13 @@ In the name of God, the Most Gracious, the Most Merciful
 
 # Tool reference
 
-Each tool is one module under `services/<group>/`. File arguments are resolved inside `--workspace-root`.
+Each tool is one module under `services/<group>/`. The server resolves file arguments inside `--workspace-root`.
 
 A normal session loads the default profile. Remote, batch, live GUI, and topology ingest stay hidden until `LTSPICE_ACTIVE_PROFILES=default,extended` or `--active-profiles default,extended`. `describe_server_capabilities` lists those groups and how to enable them.
 
-Schematic saves of an existing file require `expected_hash`, the SHA-256 from the last read (`content_hash` on inspect, list, read, and check results). A mismatch writes nothing. One place-and-wire layout commits once. Edit replies list `findings.previous` and `findings.introduced`.
+A save of a file that is already on disk requires `expected_hash`. That hash is the SHA-256 from the last read. The `content_hash` field on inspect, list, read, and check results holds that SHA-256. A mismatch writes nothing. One place-and-wire layout commits once. Edit replies list `findings.previous` and `findings.introduced`.
 
-`plot_waveforms` and `render_schematic_image` write a PNG and also return `summary`, `media_type`, and `png_base64`. Waveform downsampling keeps bucket minima and maxima.
+`plot_waveforms` and `render_schematic_image` write a PNG and also return `summary`, `media_type`, and `png_base64`. The waveform downsample keeps each bucket minimum and each bucket maximum.
 
 Sections follow the first word of the tool name. Each entry is the one-line contract and the arguments you must pass.
 
@@ -22,7 +22,7 @@ Required arguments: schematic_path, kind, reference.
 
 ### add_component_from_asy
 
-Place a symbol using the file name of an .asy in the workspace.
+Place a symbol. Use the file name of an .asy in the workspace.
 
 Required arguments: schematic_path, asy_path, reference.
 
@@ -58,7 +58,7 @@ Required arguments: schematic_path, x, y, name.
 
 ### add_wire
 
-Add a wire. Exposed as add_wire by the tool module.
+Add a wire. The tool module exposes this operation as add_wire.
 
 Required arguments: schematic_path, x1, y1, x2, y2.
 
@@ -112,7 +112,7 @@ Required arguments: netlist_path.
 
 ### check_schematic
 
-Report structural problems without running LTspice. Each finding has `location` and `fixable`.
+Report structural problems. Do not start LTspice. Each finding has `location` and `fixable`.
 
 Required arguments: schematic_path.
 
@@ -120,7 +120,7 @@ Required arguments: schematic_path.
 
 ### close_remote_session
 
-Drop a session from memory. Files on disk are left in place.
+Drop a session from memory. The files stay in place on the disk.
 
 Required arguments: session_id.
 
@@ -208,13 +208,13 @@ Required arguments: none.
 
 ### describe_mixed_signal_support
 
-State what mixed-signal authoring LTspice can and cannot do.
+State the mixed-signal design tasks that LTspice can do. State the design tasks that LTspice cannot do.
 
 Required arguments: none.
 
 ### describe_protocol_support
 
-State that I2C and SPI scaffolds here are behavioral teaching circuits.
+State that the I2C and SPI scaffolds here are behavioral circuits for instruction.
 
 Required arguments: none.
 
@@ -274,7 +274,7 @@ Required arguments: raw_path, signal.
 
 ### export_derived_raw
 
-Write a small ASCII raw file containing one trace.
+Write a small ASCII raw file that contains one trace.
 
 Required arguments: raw_path, signal.
 
@@ -286,7 +286,7 @@ Required arguments: log_path.
 
 ### export_touchstone_s2p
 
-Write a one-port-style S2P using S21 = output/reference and the other terms at 0.
+Write a one-port-style S2P. Set S21 equal to output/reference. Set the other terms to 0.
 
 Required arguments: raw_path, output_signal, reference_signal.
 
@@ -468,7 +468,7 @@ Required arguments: raw_path, signal, method.
 
 ### merge_waveforms
 
-Return two traces side by side without writing a combined raw file.
+Return two traces side by side. Do not write a combined raw file.
 
 Required arguments: left_path, right_path, signal.
 
@@ -506,13 +506,13 @@ Required arguments: session_id.
 
 ### poll_live_gui_session
 
-Report that polling a GUI session is unsupported.
+Report that the server does not support a poll of a GUI session.
 
 Required arguments: schematic_path.
 
 ### poll_live_gui_session_events
 
-Report that GUI events are unsupported.
+Report that the server does not support GUI events.
 
 Required arguments: schematic_path.
 
@@ -550,13 +550,13 @@ Required arguments: schematic_path, assignments.
 
 ### prepare_loop_gain_analysis
 
-Stage an AC loop-gain run using the extra-source method.
+Stage an AC loop-gain run. Use the extra-source method.
 
 Required arguments: schematic_path.
 
 ### prepare_meas
 
-Insert a .meas directive without replacing other measurements.
+Insert a .meas directive. Do not replace the other measurements.
 
 Required arguments: schematic_path, statement.
 
@@ -724,13 +724,13 @@ Required arguments: schematic_path, reference.
 
 ### remove_component_symbol_drawing
 
-Remove one symbol drawing by index.
+Remove one symbol graphic by index.
 
 Required arguments: asy_path, index.
 
 ### remove_instruction
 
-Remove a directive or comment containing text.
+Remove a directive or a comment that contains text.
 
 Required arguments: schematic_path, text.
 
@@ -860,7 +860,7 @@ Required arguments: query.
 
 ### send_live_gui_session_command
 
-Report that GUI commands are unsupported.
+Report that the server does not support GUI commands.
 
 Required arguments: schematic_path, command.
 
@@ -938,7 +938,7 @@ Required arguments: source_path.
 
 ### suggest_component_placement
 
-Suggest the next free grid point to the right of existing parts.
+Suggest the next free grid point to the right of the parts on the schematic.
 
 Required arguments: schematic_path, kind.
 
@@ -958,7 +958,7 @@ Required arguments: log_path.
 
 ### summarize_batch
 
-Summarize raw files sitting in a batch directory.
+Summarize the raw files in a batch directory.
 
 Required arguments: batch_dir.
 

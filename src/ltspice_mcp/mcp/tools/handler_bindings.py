@@ -35,7 +35,7 @@ def _jsonify(value: object) -> object:
 
 
 def to_json_object(value: object) -> dict[str, object]:
-    """Require a mapping and coerce nested values into JSON types."""
+    """Require a key-to-value object and coerce nested values into JSON types."""
 
     if not isinstance(value, dict):
         raise TypeError("Tool handlers must return a dictionary.")

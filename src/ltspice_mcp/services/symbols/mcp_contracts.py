@@ -35,12 +35,12 @@ MCP_CONTRACTS: dict[str, dict[str, object]] = {
     },
     "describe_mixed_signal_support": {
         "title": "Describe Mixed Signal Support",
-        "description": "State what mixed-signal authoring LTspice can and cannot do.",
+        "description": "State the mixed-signal design tasks that LTspice can do. State the design tasks that LTspice cannot do.",
         "input_schema": {"type": "object", "properties": {}, "required": []},
     },
     "describe_protocol_support": {
         "title": "Describe Protocol Support",
-        "description": "State that I2C and SPI scaffolds here are behavioral teaching circuits.",
+        "description": "State that the I2C and SPI scaffolds here are behavioral circuits for instruction.",
         "input_schema": {"type": "object", "properties": {}, "required": []},
     },
     "scaffold_behavioral_subcircuit": {

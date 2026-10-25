@@ -113,7 +113,7 @@ def export_touchstone_s2p(
     output_path: str = "",
     z0: float = 50.0,
 ) -> dict[str, object]:
-    """Write a one-port-style S2P using S21 = output/reference and the other terms at 0.
+    """Write a one-port-style S2P. Set S21 equal to output/reference. Set the other terms to 0.
 
     This is a derived export for AC data, not a substitute for a ``.net`` two-port run.
     """
@@ -142,7 +142,7 @@ def export_touchstone_s2p(
 def export_derived_raw(
     *, workspace_root: Path, raw_path: str, signal: str, output_path: str = ""
 ) -> dict[str, object]:
-    """Write a small ASCII raw file containing one trace."""
+    """Write a small ASCII raw file that contains one trace."""
 
     source = _raw(workspace_root, raw_path)
     payload = trace_payload(load_primary(source), signal, max_points=2000)
@@ -177,7 +177,7 @@ def export_derived_raw(
 def merge_waveforms(
     *, workspace_root: Path, left_path: str, right_path: str, signal: str
 ) -> dict[str, object]:
-    """Return two traces side by side without writing a combined raw file."""
+    """Return two traces side by side. Do not write a combined raw file."""
 
     left = trace_payload(load_primary(_raw(workspace_root, left_path)), signal, max_points=500)
     right = trace_payload(load_primary(_raw(workspace_root, right_path)), signal, max_points=500)
@@ -223,7 +223,7 @@ def export_measures_csv(
 
 
 def summarize_batch(*, workspace_root: Path, batch_dir: str) -> dict[str, object]:
-    """Summarize raw files sitting in a batch directory."""
+    """Summarize the raw files in a batch directory."""
 
     resolved = resolve_workspace_path(batch_dir, workspace_root=workspace_root)
     if not resolved.is_dir():

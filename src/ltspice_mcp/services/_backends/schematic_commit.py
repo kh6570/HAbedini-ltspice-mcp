@@ -37,9 +37,9 @@ def commit_schematic(
 ) -> dict[str, object]:
     """Replace one schematic when its bytes still match the last read.
 
-    A new file is written directly. An existing file uses ``commit_file``.
+    The function writes a new file directly. A file that is already on disk uses ``commit_file``.
     The reply lists findings that were already present and findings this call
-    introduced. A place-and-wire batch should call this once.
+    introduced. Call this function once for a place-and-wire batch.
     """
 
     prior = previous_findings

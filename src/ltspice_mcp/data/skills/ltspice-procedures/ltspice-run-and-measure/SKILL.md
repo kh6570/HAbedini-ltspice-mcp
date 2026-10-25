@@ -1,6 +1,6 @@
 ---
 name: ltspice-run-and-measure
-description: Run an LTspice schematic and read a bounded measurement. Use when the circuit is already drawn and you need a .meas result or a short waveform trace.
+description: Run an LTspice schematic. Read a bounded measurement. Use when you already have the drawn circuit and you need a .meas result or a short waveform trace.
 license: MIT
 metadata:
   author: ltspice-mcp
@@ -10,8 +10,7 @@ In the name of God, the Most Gracious, the Most Merciful
 
 # LTspice: Run and Measure
 
-Keep the `.asc` file as the source of truth. Add one analysis, run it, and
-read the number from the log before asking for a trace.
+Keep the `.asc` file as the source of truth. Add one analysis. Run it. Read the number from the log before you ask for a trace.
 
 ## When to use
 
